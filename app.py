@@ -1,8 +1,5 @@
 
-import math
 from datetime import date, timedelta
-from typing import Dict, List, Tuple
-
 import numpy as np
 import pandas as pd
 import requests
@@ -12,122 +9,41 @@ from pybaseball import statcast
 MLB_API = "https://statsapi.mlb.com/api/v1"
 
 st.set_page_config(
-    page_title="MLB HR Model",
+    page_title="MLB HR Model V2",
     page_icon="⚾",
     layout="wide",
     initial_sidebar_state="collapsed",
 )
 
-# -----------------------------
-# Mobile-first CSS
-# -----------------------------
 st.markdown("""
 <style>
-:root {
-  --card-radius: 18px;
-}
-.block-container {
-  max-width: 980px;
-  padding-top: 0.8rem;
-  padding-left: 0.8rem;
-  padding-right: 0.8rem;
-  padding-bottom: 4rem;
-}
-h1 { font-size: 1.75rem !important; margin-bottom: .15rem !important; }
-h2 { font-size: 1.35rem !important; }
-h3 { font-size: 1.1rem !important; }
-[data-testid="stMetric"] {
-  border: 1px solid rgba(128,128,128,.25);
-  border-radius: 14px;
-  padding: .65rem;
-}
-div[data-testid="stExpander"] {
-  border-radius: var(--card-radius);
-  border: 1px solid rgba(128,128,128,.25);
-  overflow: hidden;
-}
-.stButton > button {
-  width: 100%;
-  min-height: 48px;
-  border-radius: 14px;
-  font-weight: 700;
-}
-.stDownloadButton > button {
-  width: 100%;
-  min-height: 46px;
-  border-radius: 14px;
-}
-.mobile-card {
-  border: 1px solid rgba(128,128,128,.24);
-  border-radius: var(--card-radius);
-  padding: 14px 15px;
-  margin: 10px 0;
-  box-shadow: 0 2px 9px rgba(0,0,0,.06);
-}
-.rankline {
-  display:flex;
-  justify-content:space-between;
-  gap:12px;
-  align-items:center;
-}
-.player-name {
-  font-size:1.12rem;
-  font-weight:800;
-  line-height:1.2;
-}
-.score-pill {
-  font-size:1.05rem;
-  font-weight:900;
-  padding:7px 11px;
-  border-radius:999px;
-  border:1px solid rgba(128,128,128,.28);
-  white-space:nowrap;
-}
-.muted {
-  opacity:.72;
-  font-size:.88rem;
-}
-.grade {
-  margin-top:8px;
-  font-weight:800;
-}
-.stat-grid {
-  display:grid;
-  grid-template-columns: repeat(3, 1fr);
-  gap:7px;
-  margin-top:10px;
-}
-.stat-box {
-  text-align:center;
-  border-radius:11px;
-  padding:7px 4px;
-  background:rgba(128,128,128,.08);
-}
-.stat-value { font-weight:850; font-size:.97rem; }
-.stat-label { opacity:.70; font-size:.70rem; }
-.section-note {
-  border-radius:14px;
-  padding:10px 12px;
-  background:rgba(128,128,128,.08);
-  font-size:.88rem;
-}
-@media (max-width: 600px) {
-  .block-container { padding-left:.55rem; padding-right:.55rem; }
-  h1 { font-size:1.55rem !important; }
-  .stat-grid { grid-template-columns: repeat(3, 1fr); }
-  [data-testid="column"] { min-width: 0 !important; }
-}
+.block-container{max-width:980px;padding:.75rem .65rem 4rem}
+h1{font-size:1.6rem!important;margin-bottom:.15rem!important}
+[data-testid="stMetric"]{border:1px solid rgba(128,128,128,.22);border-radius:14px;padding:.6rem}
+div[data-testid="stExpander"]{border-radius:16px;overflow:hidden}
+.stButton>button{width:100%;min-height:48px;border-radius:14px;font-weight:800}
+.mobile-card{border:1px solid rgba(128,128,128,.22);border-radius:18px;padding:14px;margin:10px 0;box-shadow:0 2px 8px rgba(0,0,0,.05)}
+.rankline{display:flex;justify-content:space-between;gap:10px;align-items:center}
+.player{font-size:1.08rem;font-weight:850;line-height:1.2}
+.muted{opacity:.72;font-size:.84rem}
+.score{font-size:1.12rem;font-weight:900;padding:7px 11px;border-radius:999px;border:1px solid rgba(128,128,128,.3)}
+.grade{font-weight:850;margin-top:7px}
+.grid{display:grid;grid-template-columns:repeat(3,1fr);gap:6px;margin-top:10px}
+.box{text-align:center;border-radius:10px;padding:7px 3px;background:rgba(128,128,128,.08)}
+.val{font-weight:850;font-size:.95rem}.lab{opacity:.68;font-size:.67rem}
+.note{border-radius:14px;padding:10px 12px;background:rgba(128,128,128,.08);font-size:.86rem}
 </style>
 """, unsafe_allow_html=True)
 
+# Transparent metric recipe. These create RAW component scores.
 BATTER_WEIGHTS = {
-    "barrel_pct": 0.25,
-    "hard_hit_pct": 0.15,
-    "avg_ev": 0.10,
-    "max_ev": 0.10,
-    "pull_air_pct": 0.15,
-    "pull_barrel_pct": 0.15,
-    "sweet_spot_pct": 0.10,
+    "barrel_pct": .25,
+    "hard_hit_pct": .15,
+    "avg_ev": .10,
+    "max_ev": .10,
+    "pull_air_pct": .15,
+    "pull_barrel_pct": .15,
+    "sweet_spot_pct": .10,
 }
 BATTER_RANGES = {
     "barrel_pct": (5, 25),
@@ -138,6 +54,13 @@ BATTER_RANGES = {
     "pull_barrel_pct": (0, 15),
     "sweet_spot_pct": (20, 50),
 }
+PITCHER_WEIGHTS = {
+    "barrel_allowed_pct": .30,
+    "hard_hit_allowed_pct": .20,
+    "avg_ev_allowed": .15,
+    "air_pct_allowed": .15,
+    "hr_per_bbe": .20,
+}
 PITCHER_RANGES = {
     "barrel_allowed_pct": (5, 18),
     "hard_hit_allowed_pct": (35, 55),
@@ -145,435 +68,347 @@ PITCHER_RANGES = {
     "air_pct_allowed": (25, 50),
     "hr_per_bbe": (1, 10),
 }
-PITCHER_WEIGHTS = {
-    "barrel_allowed_pct": 0.30,
-    "hard_hit_allowed_pct": 0.20,
-    "avg_ev_allowed": 0.15,
-    "air_pct_allowed": 0.15,
-    "hr_per_bbe": 0.20,
-}
 
-def clip_score(value, low, high):
-    if value is None or pd.isna(value):
+def clip_score(v, lo, hi):
+    if v is None or pd.isna(v):
         return 50.0
-    return float(np.clip((value - low) / (high - low) * 100, 0, 100))
+    return float(np.clip((v-lo)/(hi-lo)*100, 0, 100))
 
-def request_json(url, params=None):
+def req_json(url, params=None):
     r = requests.get(url, params=params, timeout=30)
     r.raise_for_status()
     return r.json()
 
 @st.cache_data(ttl=1800, show_spinner=False)
-def get_schedule(game_date: str):
-    data = request_json(
-        f"{MLB_API}/schedule",
-        params={"sportId": 1, "date": game_date, "hydrate": "probablePitcher,team,venue"},
-    )
-    games = []
-    for d in data.get("dates", []):
-        for g in d.get("games", []):
-            away = g["teams"]["away"]["team"]
-            home = g["teams"]["home"]["team"]
-            games.append({
-                "game_pk": g["gamePk"],
-                "away_id": away["id"], "away": away["name"],
-                "home_id": home["id"], "home": home["name"],
-                "away_sp_id": g["teams"]["away"].get("probablePitcher", {}).get("id"),
-                "away_sp": g["teams"]["away"].get("probablePitcher", {}).get("fullName"),
-                "home_sp_id": g["teams"]["home"].get("probablePitcher", {}).get("id"),
-                "home_sp": g["teams"]["home"].get("probablePitcher", {}).get("fullName"),
-                "venue": g.get("venue", {}).get("name", ""),
-                "status": g.get("status", {}).get("detailedState", ""),
+def get_schedule(game_date):
+    data = req_json(f"{MLB_API}/schedule", {
+        "sportId":1, "date":game_date, "hydrate":"probablePitcher,team,venue"
+    })
+    rows=[]
+    for d in data.get("dates",[]):
+        for g in d.get("games",[]):
+            a=g["teams"]["away"]["team"]; h=g["teams"]["home"]["team"]
+            rows.append({
+                "away_id":a["id"],"away":a["name"],"home_id":h["id"],"home":h["name"],
+                "away_sp_id":g["teams"]["away"].get("probablePitcher",{}).get("id"),
+                "away_sp":g["teams"]["away"].get("probablePitcher",{}).get("fullName"),
+                "home_sp_id":g["teams"]["home"].get("probablePitcher",{}).get("id"),
+                "home_sp":g["teams"]["home"].get("probablePitcher",{}).get("fullName"),
+                "venue":g.get("venue",{}).get("name",""),
+                "status":g.get("status",{}).get("detailedState",""),
             })
-    return pd.DataFrame(games)
+    return pd.DataFrame(rows)
 
 @st.cache_data(ttl=1800, show_spinner=False)
-def get_active_roster(team_id: int):
-    data = request_json(f"{MLB_API}/teams/{team_id}/roster", params={"rosterType": "active"})
-    rows = []
-    for r in data.get("roster", []):
-        pos = r.get("position", {}).get("abbreviation", "")
+def get_roster(team_id):
+    data=req_json(f"{MLB_API}/teams/{team_id}/roster",{"rosterType":"active"})
+    rows=[]
+    for r in data.get("roster",[]):
         rows.append({
-            "player_id": r["person"]["id"],
-            "name": r["person"]["fullName"],
-            "position": pos,
+            "player_id":r["person"]["id"],
+            "name":r["person"]["fullName"],
+            "position":r.get("position",{}).get("abbreviation","")
         })
     return pd.DataFrame(rows)
 
 @st.cache_data(ttl=1800, show_spinner=True)
-def get_statcast_window(start_dt: str, end_dt: str):
-    df = statcast(start_dt=start_dt, end_dt=end_dt)
-    return pd.DataFrame() if df is None else df.copy()
+def get_statcast(start_dt,end_dt):
+    x=statcast(start_dt=start_dt,end_dt=end_dt)
+    return pd.DataFrame() if x is None else x.copy()
 
 def is_pull(row):
-    x, stand = row.get("hc_x"), row.get("stand")
-    if pd.isna(x) or stand not in ("L", "R"):
-        return False
-    return (stand == "R" and x < 125.42) or (stand == "L" and x > 125.42)
+    x=row.get("hc_x"); stand=row.get("stand")
+    if pd.isna(x) or stand not in ("L","R"): return False
+    return (stand=="R" and x<125.42) or (stand=="L" and x>125.42)
 
-def bbe_metrics(df: pd.DataFrame, n: int):
-    if df.empty:
-        return {}
-    x = df.dropna(subset=["launch_speed", "launch_angle"]).copy()
-    if x.empty:
-        return {}
-    sort_cols = [c for c in ["game_date", "game_pk", "at_bat_number", "pitch_number"] if c in x.columns]
-    if sort_cols:
-        x = x.sort_values(sort_cols)
-    x = x.tail(n)
-
-    lsa = pd.to_numeric(x.get("launch_speed_angle"), errors="coerce")
-    ev = pd.to_numeric(x["launch_speed"], errors="coerce")
-    la = pd.to_numeric(x["launch_angle"], errors="coerce")
-
-    x["is_barrel"] = lsa.eq(6)
-    x["is_hard_hit"] = ev.ge(95)
-    x["is_sweet_spot"] = la.between(8, 32)
-    x["is_pull"] = x.apply(is_pull, axis=1)
-    x["is_air"] = la.ge(10)
-    x["is_pull_air"] = x["is_pull"] & x["is_air"]
-    x["is_pull_barrel"] = x["is_pull"] & x["is_barrel"]
-
+def bbe_metrics(df,n):
+    x=df.dropna(subset=["launch_speed","launch_angle"]).copy()
+    if x.empty:return {}
+    cols=[c for c in ["game_date","game_pk","at_bat_number","pitch_number"] if c in x.columns]
+    if cols:x=x.sort_values(cols)
+    x=x.tail(n)
+    ev=pd.to_numeric(x["launch_speed"],errors="coerce")
+    la=pd.to_numeric(x["launch_angle"],errors="coerce")
+    lsa=pd.to_numeric(x.get("launch_speed_angle"),errors="coerce")
+    x["barrel"]=lsa.eq(6)
+    x["hard"]=ev.ge(95)
+    x["sweet"]=la.between(8,32)
+    x["pull"]=x.apply(is_pull,axis=1)
+    x["air"]=la.ge(10)
+    x["pull_air"]=x["pull"]&x["air"]
+    x["pull_barrel"]=x["pull"]&x["barrel"]
     return {
-        "bbe": len(x),
-        "barrel_pct": x["is_barrel"].mean() * 100,
-        "hard_hit_pct": x["is_hard_hit"].mean() * 100,
-        "avg_ev": ev.mean(),
-        "max_ev": ev.max(),
-        "pull_air_pct": x["is_pull_air"].mean() * 100,
-        "pull_barrel_pct": x["is_pull_barrel"].mean() * 100,
-        "sweet_spot_pct": x["is_sweet_spot"].mean() * 100,
+        "bbe":len(x),
+        "barrel_pct":x["barrel"].mean()*100,
+        "hard_hit_pct":x["hard"].mean()*100,
+        "avg_ev":ev.mean(),
+        "max_ev":ev.max(),
+        "pull_air_pct":x["pull_air"].mean()*100,
+        "pull_barrel_pct":x["pull_barrel"].mean()*100,
+        "sweet_spot_pct":x["sweet"].mean()*100,
     }
 
-def score_batter_metrics(m):
-    if not m:
-        return np.nan
-    total = used = 0.0
-    for k, w in BATTER_WEIGHTS.items():
-        v = m.get(k)
+def score_batter(m):
+    if not m:return np.nan
+    s=w=0
+    for k,wt in BATTER_WEIGHTS.items():
+        v=m.get(k)
         if v is not None and not pd.isna(v):
-            lo, hi = BATTER_RANGES[k]
-            total += clip_score(v, lo, hi) * w
-            used += w
-    return total / used if used else np.nan
+            lo,hi=BATTER_RANGES[k]
+            s+=clip_score(v,lo,hi)*wt; w+=wt
+    return s/w if w else np.nan
 
 def pitcher_metrics(df):
-    x = df.dropna(subset=["launch_speed", "launch_angle"]).copy()
-    if x.empty:
-        return {}
-    ev = pd.to_numeric(x["launch_speed"], errors="coerce")
-    la = pd.to_numeric(x["launch_angle"], errors="coerce")
-    lsa = pd.to_numeric(x.get("launch_speed_angle"), errors="coerce")
-    x["is_barrel"] = lsa.eq(6)
-    x["is_hard_hit"] = ev.ge(95)
-    x["is_air"] = la.ge(10)
-    events = x["events"] if "events" in x.columns else pd.Series(index=x.index, dtype=object)
-    x["is_hr"] = events.eq("home_run")
+    x=df.dropna(subset=["launch_speed","launch_angle"]).copy()
+    if x.empty:return {}
+    ev=pd.to_numeric(x["launch_speed"],errors="coerce")
+    la=pd.to_numeric(x["launch_angle"],errors="coerce")
+    lsa=pd.to_numeric(x.get("launch_speed_angle"),errors="coerce")
+    events=x["events"] if "events" in x else pd.Series(index=x.index,dtype=object)
     return {
-        "bbe_allowed": len(x),
-        "barrel_allowed_pct": x["is_barrel"].mean() * 100,
-        "hard_hit_allowed_pct": x["is_hard_hit"].mean() * 100,
-        "avg_ev_allowed": ev.mean(),
-        "air_pct_allowed": x["is_air"].mean() * 100,
-        "hr_per_bbe": x["is_hr"].mean() * 100,
+        "barrel_allowed_pct":lsa.eq(6).mean()*100,
+        "hard_hit_allowed_pct":ev.ge(95).mean()*100,
+        "avg_ev_allowed":ev.mean(),
+        "air_pct_allowed":la.ge(10).mean()*100,
+        "hr_per_bbe":events.eq("home_run").mean()*100,
+        "bbe_allowed":len(x),
     }
 
 def score_pitcher(m):
-    if not m:
-        return 50.0
-    total = used = 0.0
-    for k, w in PITCHER_WEIGHTS.items():
-        v = m.get(k)
+    if not m:return 50.0
+    s=w=0
+    for k,wt in PITCHER_WEIGHTS.items():
+        v=m.get(k)
         if v is not None and not pd.isna(v):
-            lo, hi = PITCHER_RANGES[k]
-            total += clip_score(v, lo, hi) * w
-            used += w
-    return total / used if used else 50.0
+            lo,hi=PITCHER_RANGES[k]
+            s+=clip_score(v,lo,hi)*wt; w+=wt
+    return s/w if w else 50.0
 
-def pitcher_pitch_mix(df, min_usage=.20):
-    if df.empty or "pitch_type" not in df:
-        return []
-    mix = df.dropna(subset=["pitch_type"])["pitch_type"].value_counts(normalize=True)
-    major = mix[mix >= min_usage]
-    if major.empty:
-        major = mix.head(2)
-    return [(str(pt), float(pct)) for pt, pct in major.items()]
+def pitch_mix(df,min_usage=.20):
+    if df.empty or "pitch_type" not in df:return []
+    mix=df.dropna(subset=["pitch_type"])["pitch_type"].value_counts(normalize=True)
+    major=mix[mix>=min_usage]
+    if major.empty:major=mix.head(2)
+    return [(str(pt),float(u)) for pt,u in major.items()]
 
-def pitch_match_score(batter_df, pitcher_mix):
-    if batter_df.empty or not pitcher_mix:
-        return 50.0
-    scores, weights = [], []
-    for pitch_type, usage in pitcher_mix:
-        d = batter_df[batter_df["pitch_type"] == pitch_type]
-        n = len(d.dropna(subset=["launch_speed", "launch_angle"]))
-        if n < 2:
-            continue
-        m = bbe_metrics(d, min(15, n))
-        scores.append(score_batter_metrics(m))
-        weights.append(usage)
-    return float(np.average(scores, weights=weights)) if scores else 50.0
+def pitch_match_raw(bdf,pmix):
+    scores=[]; weights=[]
+    for pt,u in pmix:
+        d=bdf[bdf["pitch_type"]==pt]
+        n=len(d.dropna(subset=["launch_speed","launch_angle"]))
+        if n<2:continue
+        m=bbe_metrics(d,min(15,n))
+        scores.append(score_batter(m)); weights.append(u)
+    return float(np.average(scores,weights=weights)) if scores else 50.0
 
-def classify(score):
-    if score >= 90: return "🚀 ELITE"
-    if score >= 84: return "🔥 STRONG"
-    if score >= 78: return "✅ PLAYABLE"
-    if score >= 70: return "👀 WATCH"
+def recent_pa_count(df,cutoff):
+    d=df[pd.to_datetime(df["game_date"])>=pd.Timestamp(cutoff)]
+    if d.empty:return 0
+    if "at_bat_number" in d.columns and "game_pk" in d.columns:
+        return int(d[["game_pk","at_bat_number"]].drop_duplicates().shape[0])
+    return int(len(d))
+
+def percentile_score(series):
+    # 50-99 range keeps the board intuitive while preserving relative separation.
+    pct=series.rank(method="average",pct=True)
+    return 50 + 49*pct
+
+def grade(score):
+    if score>=90:return "🚀 ELITE"
+    if score>=85:return "🔥 STRONG"
+    if score>=80:return "✅ GOOD"
+    if score>=75:return "👀 WATCH"
     return "— PASS"
 
-@st.cache_data(ttl=1800, show_spinner=False)
-def build_rankings(game_date: str, lookback_days: int):
-    schedule = get_schedule(game_date)
-    if schedule.empty:
-        return pd.DataFrame(), schedule
+@st.cache_data(ttl=1800,show_spinner=False)
+def build(game_date,lookback_days,projected_pool):
+    schedule=get_schedule(game_date)
+    if schedule.empty:return pd.DataFrame(),schedule
+    end=(pd.Timestamp(game_date)-pd.Timedelta(days=1)).date()
+    start=end-timedelta(days=lookback_days-1)
+    sc=get_statcast(str(start),str(end))
+    if sc.empty:return pd.DataFrame(),schedule
+    for c in ["batter","pitcher"]:
+        sc[c]=pd.to_numeric(sc[c],errors="coerce")
+    sc["game_date"]=pd.to_datetime(sc["game_date"])
+    recent_cutoff=end-timedelta(days=13)
 
-    end_dt = (pd.Timestamp(game_date) - pd.Timedelta(days=1)).date()
-    start_dt = end_dt - timedelta(days=lookback_days - 1)
-    sc = get_statcast_window(str(start_dt), str(end_dt))
-    if sc.empty:
-        return pd.DataFrame(), schedule
-
-    for c in ["batter", "pitcher"]:
-        sc[c] = pd.to_numeric(sc[c], errors="coerce")
-
-    candidates = []
-    for _, g in schedule.iterrows():
-        sides = [
-            (int(g["away_id"]), g["away"], g["home"], g["home_sp_id"], g["home_sp"]),
-            (int(g["home_id"]), g["home"], g["away"], g["away_sp_id"], g["away_sp"]),
+    rows=[]
+    for _,g in schedule.iterrows():
+        sides=[
+            (int(g["away_id"]),g["away"],g["home"],g["home_sp_id"],g["home_sp"]),
+            (int(g["home_id"]),g["home"],g["away"],g["away_sp_id"],g["away_sp"]),
         ]
-        for team_id, team_name, opp_name, opp_sp_id, opp_sp in sides:
-            if opp_sp_id is None or pd.isna(opp_sp_id):
-                continue
-            roster = get_active_roster(team_id)
-            roster = roster[~roster["position"].isin(["P", "TWP"])]
+        for team_id,team,opp,spid,spname in sides:
+            if spid is None or pd.isna(spid):continue
+            roster=get_roster(team_id)
+            roster=roster[~roster["position"].isin(["P","TWP"])].copy()
 
-            sp_rows = sc[sc["pitcher"] == int(opp_sp_id)]
-            pm = pitcher_metrics(sp_rows)
-            pscore = score_pitcher(pm)
-            pmix = pitcher_pitch_mix(sp_rows)
+            # Build likely hitter pool from recent MLB playing time.
+            play=[]
+            for _,p in roster.iterrows():
+                pid=int(p["player_id"])
+                bdf=sc[sc["batter"]==pid]
+                bbe=len(bdf.dropna(subset=["launch_speed","launch_angle"]))
+                pa=recent_pa_count(bdf,recent_cutoff)
+                if bbe>=10:
+                    play.append((pid,p["name"],p["position"],pa,bbe))
+            play=sorted(play,key=lambda z:(z[3],z[4]),reverse=True)[:projected_pool]
 
-            for _, p in roster.iterrows():
-                pid = int(p["player_id"])
-                br = sc[sc["batter"] == pid]
-                bbe_count = len(br.dropna(subset=["launch_speed", "launch_angle"]))
-                if bbe_count < 10:
-                    continue
+            spdf=sc[sc["pitcher"]==int(spid)]
+            pm=pitcher_metrics(spdf)
+            praw=score_pitcher(pm)
+            pmix=pitch_mix(spdf)
 
-                m10 = bbe_metrics(br, 10)
-                m15 = bbe_metrics(br, 15)
-                s10 = score_batter_metrics(m10)
-                s15 = score_batter_metrics(m15)
-                recent = .60 * s10 + .40 * s15
-                match = pitch_match_score(br, pmix)
-                total = .50 * recent + .25 * match + .25 * pscore
-
-                candidates.append({
-                    "Batter": p["name"],
-                    "Team": team_name,
-                    "Opponent": opp_name,
-                    "Opp SP": opp_sp or "TBD",
-                    "HR Score": round(total, 1),
-                    "Grade": classify(total),
-                    "Recent Score": round(recent, 1),
-                    "Pitch Match": round(match, 1),
-                    "Pitcher Vulnerability": round(pscore, 1),
-                    "SP Primary Pitches": ", ".join(f"{pt} {u:.0%}" for pt, u in pmix) or "N/A",
-                    "L10 Barrel%": round(m10.get("barrel_pct", np.nan), 1),
-                    "L10 HardHit%": round(m10.get("hard_hit_pct", np.nan), 1),
-                    "L10 AvgEV": round(m10.get("avg_ev", np.nan), 1),
-                    "L10 MaxEV": round(m10.get("max_ev", np.nan), 1),
-                    "L10 PullAir%": round(m10.get("pull_air_pct", np.nan), 1),
-                    "L10 PullBarrel%": round(m10.get("pull_barrel_pct", np.nan), 1),
-                    "L10 SweetSpot%": round(m10.get("sweet_spot_pct", np.nan), 1),
-                    "L15 Barrel%": round(m15.get("barrel_pct", np.nan), 1),
-                    "L15 HardHit%": round(m15.get("hard_hit_pct", np.nan), 1),
-                    "L15 AvgEV": round(m15.get("avg_ev", np.nan), 1),
-                    "L15 MaxEV": round(m15.get("max_ev", np.nan), 1),
-                    "Pitcher BarrelAllowed%": round(pm.get("barrel_allowed_pct", np.nan), 1),
-                    "Pitcher HardHitAllowed%": round(pm.get("hard_hit_allowed_pct", np.nan), 1),
-                    "Pitcher AvgEVAllowed": round(pm.get("avg_ev_allowed", np.nan), 1),
-                    "Pitcher HR/BBE%": round(pm.get("hr_per_bbe", np.nan), 1),
-                    "Recent BBE Available": bbe_count,
+            for pid,name,pos,pa,bbe in play:
+                bdf=sc[sc["batter"]==pid]
+                m10=bbe_metrics(bdf,10);m15=bbe_metrics(bdf,15)
+                s10=score_batter(m10);s15=score_batter(m15)
+                recent_raw=.60*s10+.40*s15
+                match_raw=pitch_match_raw(bdf,pmix)
+                rows.append({
+                    "Batter":name,"Team":team,"Opponent":opp,"Opp SP":spname or "TBD",
+                    "Recent PA (14d)":pa,"Recent BBE Available":bbe,
+                    "Recent Raw":recent_raw,"Pitch Match Raw":match_raw,"Pitcher Raw":praw,
+                    "SP Primary Pitches":", ".join(f"{pt} {u:.0%}" for pt,u in pmix) or "N/A",
+                    "L10 Barrel%":round(m10.get("barrel_pct",np.nan),1),
+                    "L10 HardHit%":round(m10.get("hard_hit_pct",np.nan),1),
+                    "L10 AvgEV":round(m10.get("avg_ev",np.nan),1),
+                    "L10 MaxEV":round(m10.get("max_ev",np.nan),1),
+                    "L10 PullAir%":round(m10.get("pull_air_pct",np.nan),1),
+                    "L10 PullBarrel%":round(m10.get("pull_barrel_pct",np.nan),1),
+                    "L10 SweetSpot%":round(m10.get("sweet_spot_pct",np.nan),1),
+                    "L15 Barrel%":round(m15.get("barrel_pct",np.nan),1),
+                    "L15 HardHit%":round(m15.get("hard_hit_pct",np.nan),1),
+                    "L15 AvgEV":round(m15.get("avg_ev",np.nan),1),
+                    "Pitcher BarrelAllowed%":round(pm.get("barrel_allowed_pct",np.nan),1),
+                    "Pitcher HardHitAllowed%":round(pm.get("hard_hit_allowed_pct",np.nan),1),
+                    "Pitcher AvgEVAllowed":round(pm.get("avg_ev_allowed",np.nan),1),
+                    "Pitcher HR/BBE%":round(pm.get("hr_per_bbe",np.nan),1),
                 })
+    out=pd.DataFrame(rows)
+    if out.empty:return out,schedule
 
-    out = pd.DataFrame(candidates)
-    if not out.empty:
-        out = out.sort_values("HR Score", ascending=False).reset_index(drop=True)
-        out.insert(0, "Rank", np.arange(1, len(out)+1))
-    return out, schedule
+    # V2 CALIBRATION: turn each raw component into its slate percentile score.
+    out["Recent Score"]=percentile_score(out["Recent Raw"])
+    out["Pitch Match"]=percentile_score(out["Pitch Match Raw"])
+    out["Pitcher Vulnerability"]=percentile_score(out["Pitcher Raw"])
 
-def fmt(v, suffix=""):
-    return "—" if pd.isna(v) else f"{v}{suffix}"
+    # Final board remains 50/25/25, but uses calibrated slate-relative components.
+    out["HR Score"]=(
+        .50*out["Recent Score"]+
+        .25*out["Pitch Match"]+
+        .25*out["Pitcher Vulnerability"]
+    ).round(1)
+    out["Grade"]=out["HR Score"].apply(grade)
+    out=out.sort_values(["HR Score","Recent Raw"],ascending=False).reset_index(drop=True)
+    out.insert(0,"Rank",np.arange(1,len(out)+1))
+    return out,schedule
 
-def render_player_card(row):
+def f(v,s=""):
+    return "—" if pd.isna(v) else f"{v}{s}"
+
+def card(r):
     st.markdown(f"""
     <div class="mobile-card">
       <div class="rankline">
-        <div>
-          <div class="muted">#{int(row['Rank'])} · {row['Team']} vs {row['Opponent']}</div>
-          <div class="player-name">{row['Batter']}</div>
-        </div>
-        <div class="score-pill">{row['HR Score']}</div>
+        <div><div class="muted">#{int(r['Rank'])} · {r['Team']} vs {r['Opponent']}</div>
+        <div class="player">{r['Batter']}</div></div>
+        <div class="score">{r['HR Score']}</div>
       </div>
-      <div class="grade">{row['Grade']}</div>
-      <div class="muted">vs {row['Opp SP']} · {row['SP Primary Pitches']}</div>
-      <div class="stat-grid">
-        <div class="stat-box"><div class="stat-value">{fmt(row['L10 Barrel%'],'%')}</div><div class="stat-label">L10 BARREL</div></div>
-        <div class="stat-box"><div class="stat-value">{fmt(row['L10 HardHit%'],'%')}</div><div class="stat-label">L10 HARD HIT</div></div>
-        <div class="stat-box"><div class="stat-value">{fmt(row['L10 AvgEV'])}</div><div class="stat-label">L10 AVG EV</div></div>
-        <div class="stat-box"><div class="stat-value">{fmt(row['L10 PullAir%'],'%')}</div><div class="stat-label">PULL AIR</div></div>
-        <div class="stat-box"><div class="stat-value">{fmt(row['Pitch Match'])}</div><div class="stat-label">PITCH MATCH</div></div>
-        <div class="stat-box"><div class="stat-value">{fmt(row['Pitcher Vulnerability'])}</div><div class="stat-label">SP VULN</div></div>
+      <div class="grade">{r['Grade']}</div>
+      <div class="muted">vs {r['Opp SP']} · {r['SP Primary Pitches']}</div>
+      <div class="grid">
+        <div class="box"><div class="val">{f(r['L10 Barrel%'],'%')}</div><div class="lab">L10 BARREL</div></div>
+        <div class="box"><div class="val">{f(r['L10 HardHit%'],'%')}</div><div class="lab">L10 HARD HIT</div></div>
+        <div class="box"><div class="val">{f(r['L10 AvgEV'])}</div><div class="lab">L10 AVG EV</div></div>
+        <div class="box"><div class="val">{f(round(r['Recent Score'],1))}</div><div class="lab">RECENT</div></div>
+        <div class="box"><div class="val">{f(round(r['Pitch Match'],1))}</div><div class="lab">PITCH MATCH</div></div>
+        <div class="box"><div class="val">{f(round(r['Pitcher Vulnerability'],1))}</div><div class="lab">SP VULN</div></div>
       </div>
     </div>
-    """, unsafe_allow_html=True)
-
+    """,unsafe_allow_html=True)
     with st.expander("View full breakdown"):
-        c1, c2, c3 = st.columns(3)
-        c1.metric("Recent", row["Recent Score"])
-        c2.metric("Pitch Match", row["Pitch Match"])
-        c3.metric("SP Vulnerability", row["Pitcher Vulnerability"])
-
-        st.markdown("**Last 10 BBE**")
-        l10 = pd.DataFrame({
-            "Metric": ["Barrel%", "HardHit%", "Avg EV", "Max EV", "Pull-Air%", "Pull-Barrel%", "SweetSpot%"],
-            "Value": [
-                row["L10 Barrel%"], row["L10 HardHit%"], row["L10 AvgEV"], row["L10 MaxEV"],
-                row["L10 PullAir%"], row["L10 PullBarrel%"], row["L10 SweetSpot%"]
-            ]
-        })
-        st.dataframe(l10, hide_index=True, use_container_width=True)
-
-        st.markdown("**Last 15 BBE**")
-        l15 = pd.DataFrame({
-            "Metric": ["Barrel%", "HardHit%", "Avg EV", "Max EV"],
-            "Value": [row["L15 Barrel%"], row["L15 HardHit%"], row["L15 AvgEV"], row["L15 MaxEV"]]
-        })
-        st.dataframe(l15, hide_index=True, use_container_width=True)
-
+        c1,c2,c3=st.columns(3)
+        c1.metric("Recent",round(r["Recent Score"],1))
+        c2.metric("Pitch",round(r["Pitch Match"],1))
+        c3.metric("SP Vuln",round(r["Pitcher Vulnerability"],1))
+        st.caption(f"Recent playing time: {int(r['Recent PA (14d)'])} PA-equivalents in the last 14 days")
+        st.dataframe(pd.DataFrame({
+            "Metric":["L10 Barrel%","L10 HardHit%","L10 Avg EV","L10 Max EV","L10 Pull-Air%","L10 Pull-Barrel%","L10 SweetSpot%",
+                      "L15 Barrel%","L15 HardHit%","L15 Avg EV"],
+            "Value":[r["L10 Barrel%"],r["L10 HardHit%"],r["L10 AvgEV"],r["L10 MaxEV"],r["L10 PullAir%"],
+                     r["L10 PullBarrel%"],r["L10 SweetSpot%"],r["L15 Barrel%"],r["L15 HardHit%"],r["L15 AvgEV"]]
+        }),hide_index=True,use_container_width=True)
         st.markdown("**Opposing pitcher**")
-        p = pd.DataFrame({
-            "Metric": ["Barrel Allowed%", "HardHit Allowed%", "Avg EV Allowed", "HR / BBE%"],
-            "Value": [
-                row["Pitcher BarrelAllowed%"], row["Pitcher HardHitAllowed%"],
-                row["Pitcher AvgEVAllowed"], row["Pitcher HR/BBE%"]
-            ]
-        })
-        st.dataframe(p, hide_index=True, use_container_width=True)
+        st.dataframe(pd.DataFrame({
+            "Metric":["Barrel Allowed%","HardHit Allowed%","Avg EV Allowed","HR/BBE%"],
+            "Value":[r["Pitcher BarrelAllowed%"],r["Pitcher HardHitAllowed%"],r["Pitcher AvgEVAllowed"],r["Pitcher HR/BBE%"]]
+        }),hide_index=True,use_container_width=True)
 
-# -----------------------------
-# UI
-# -----------------------------
-st.title("⚾ MLB HR Model")
-st.caption("Daily Statcast-powered HR opportunity rankings")
+st.title("⚾ MLB HR Model V2")
+st.caption("Calibrated daily Statcast HR opportunity rankings")
 
-with st.expander("⚙️ Slate settings", expanded=True):
-    selected_date = st.date_input("Slate date", value=date.today())
-    c1, c2 = st.columns(2)
-    lookback = c1.selectbox("Statcast history", [30, 45, 60], index=1, format_func=lambda x: f"{x} days")
-    top_n = c2.selectbox("Show", [5, 10, 15, 20, 30], index=1, format_func=lambda x: f"Top {x}")
-    min_score = st.slider("Minimum HR Score", 0, 100, 70)
-    run = st.button("🔥 BUILD TODAY'S HR BOARD", type="primary")
+with st.expander("⚙️ Slate settings",expanded=True):
+    selected=st.date_input("Slate date",value=date.today())
+    c1,c2=st.columns(2)
+    lookback=c1.selectbox("Statcast history",[30,45,60],index=1,format_func=lambda x:f"{x} days")
+    shown=c2.selectbox("Show",[5,10,15,20,30],index=1,format_func=lambda x:f"Top {x}")
+    pool=st.selectbox("Likely hitter pool per team",[9,10,11,12],index=1,
+                      help="Uses recent playing time to reduce bench noise. This is not a confirmed lineup.")
+    minimum=st.slider("Minimum HR Score",50,99,80)
+    run=st.button("🔥 BUILD TODAY'S HR BOARD",type="primary")
 
 if run:
-    with st.spinner("Building the slate from Baseball Savant / Statcast..."):
-        rankings, schedule = build_rankings(str(selected_date), int(lookback))
-
+    with st.spinner("Building and calibrating today's Statcast board..."):
+        rankings,schedule=build(str(selected),int(lookback),int(pool))
     if schedule.empty:
-        st.warning("No MLB games were found for this date.")
-        st.stop()
+        st.warning("No MLB games found.");st.stop()
 
     st.markdown("### 📅 Slate")
-    for _, g in schedule.iterrows():
-        away_sp = g["away_sp"] or "TBD"
-        home_sp = g["home_sp"] or "TBD"
-        st.markdown(
-            f"<div class='section-note'><b>{g['away']} @ {g['home']}</b><br>"
-            f"<span class='muted'>{away_sp} vs {home_sp} · {g['venue']}</span></div>",
-            unsafe_allow_html=True
-        )
-
+    for _,g in schedule.iterrows():
+        st.markdown(f"<div class='note'><b>{g['away']} @ {g['home']}</b><br>"
+                    f"<span class='muted'>{g['away_sp'] or 'TBD'} vs {g['home_sp'] or 'TBD'} · {g['venue']}</span></div>",
+                    unsafe_allow_html=True)
     if rankings.empty:
-        st.warning("No hitters were scored. Probable pitchers may not be posted yet, or there may be insufficient Statcast data.")
-        st.stop()
+        st.warning("No hitters were scored.");st.stop()
 
-    qualified = rankings[rankings["HR Score"] >= min_score].head(int(top_n))
+    q=rankings[rankings["HR Score"]>=minimum].head(int(shown))
+    m1,m2,m3=st.columns(3)
+    m1.metric("Scored",len(rankings))
+    m2.metric("Qualified",len(rankings[rankings["HR Score"]>=minimum]))
+    m3.metric("Top",rankings.iloc[0]["HR Score"])
 
-    m1, m2, m3 = st.columns(3)
-    m1.metric("Scored", len(rankings))
-    m2.metric("Qualified", len(rankings[rankings["HR Score"] >= min_score]))
-    m3.metric("Top", rankings.iloc[0]["HR Score"])
-
-    tabs = st.tabs(["🔥 Best HR Spots", "🚀 Elite", "📊 Full Board"])
-
+    tabs=st.tabs(["🔥 Best HR Spots","🚀 Elite","📊 Full Board"])
     with tabs[0]:
-        if qualified.empty:
-            st.info("No hitters meet the current minimum score.")
+        if q.empty:st.info("No hitters meet the current minimum score.")
         else:
-            for _, row in qualified.iterrows():
-                render_player_card(row)
-
+            for _,r in q.iterrows():card(r)
     with tabs[1]:
-        elite = rankings[rankings["HR Score"] >= 84].head(20)
-        if elite.empty:
-            st.info("No STRONG/ELITE hitters on this slate.")
+        elite=rankings[rankings["HR Score"]>=90].head(20)
+        if elite.empty:st.info("No ELITE hitters on this slate.")
         else:
-            for _, row in elite.iterrows():
-                render_player_card(row)
-
+            for _,r in elite.iterrows():card(r)
     with tabs[2]:
-        display_cols = [
-            "Rank", "Batter", "Team", "Opponent", "Opp SP", "HR Score", "Grade",
-            "Recent Score", "Pitch Match", "Pitcher Vulnerability",
-            "L10 Barrel%", "L10 HardHit%", "L10 AvgEV", "L10 PullAir%", "L10 PullBarrel%"
-        ]
-        st.dataframe(rankings[display_cols], use_container_width=True, hide_index=True)
-
-        st.download_button(
-            "Download full CSV",
-            data=rankings.to_csv(index=False).encode("utf-8"),
-            file_name=f"mlb_hr_board_{selected_date}.csv",
-            mime="text/csv",
-        )
-
-    st.markdown("""
-    <div class="section-note">
-      <b>V1 scope:</b> This board ranks HR opportunities from baseball data. It does not yet include sportsbook price,
-      weather, park-factor adjustments, or calibrated fair odds. Those are the next modules.
-    </div>
-    """, unsafe_allow_html=True)
-
+        cols=["Rank","Batter","Team","Opponent","Opp SP","HR Score","Grade","Recent Score",
+              "Pitch Match","Pitcher Vulnerability","Recent PA (14d)","L10 Barrel%","L10 HardHit%",
+              "L10 AvgEV","L10 PullAir%","L10 PullBarrel%"]
+        st.dataframe(rankings[cols],hide_index=True,use_container_width=True)
+        st.download_button("Download full CSV",rankings.to_csv(index=False).encode(),
+                           file_name=f"mlb_hr_v2_{selected}.csv",mime="text/csv")
+    st.markdown("<div class='note'><b>V2:</b> Scores are calibrated to the current slate. A 90 means a hitter is "
+                "among the strongest combined HR opportunities on that day's board; it is <b>not</b> a 90% HR probability."
+                "</div>",unsafe_allow_html=True)
 else:
+    st.markdown("<div class='note'>V2 fixes the original score compression and reduces bench-player noise. "
+                "Tap <b>BUILD TODAY'S HR BOARD</b> to rank the slate.</div>",unsafe_allow_html=True)
+
+with st.expander("ℹ️ What changed in V2"):
     st.markdown("""
-    <div class="section-note">
-      Pick the slate date, then tap <b>BUILD TODAY'S HR BOARD</b>. Once this app is deployed, you can bookmark it
-      on your phone and use it like a normal website.
-    </div>
-    """, unsafe_allow_html=True)
-
-with st.expander("ℹ️ How the HR Score works"):
-    st.markdown("""
-**50% Recent contact quality**
-- Last 10 BBE = 60% of recent score
-- Last 15 BBE = 40%
-
-**25% Pitch-type matchup**
-- Starter pitches used at least 20% are evaluated.
-- If none reach 20%, the top two pitches are used.
-
-**25% Pitcher vulnerability**
-- Barrel rate allowed
-- Hard-hit rate allowed
-- Average EV allowed
-- Air-ball rate
-- HR per BBE
-
-**Contact metrics**
-- Barrel%
-- Hard-hit%
-- Average EV
-- Max EV
-- Pull-Air%
-- Pull-Barrel%
-- Sweet-Spot%
+- **No fake threshold fix.** Raw Statcast components are first calculated normally, then calibrated by percentile against the day's slate.
+- **Likely hitter pool.** Each team is trimmed to the most active recent hitters instead of every non-pitcher on the active roster.
+- **Same core weighting:** 50% recent contact, 25% pitch-type matchup, 25% pitcher vulnerability.
+- **Same recent window blend:** Last 10 BBE = 60%, Last 15 BBE = 40%.
+- **90+ = ELITE, 85+ = STRONG, 80+ = GOOD.**
+- The HR Score is a **ranking score, not a probability**.
 """)
