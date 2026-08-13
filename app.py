@@ -493,7 +493,7 @@ if run:
             pm=rankings.sort_values("Pitch Match",ascending=False).reset_index(drop=True)
     pm["Pitch Rank"]=range(1,len(pm)+1)
     pm["Pitch Grade"]=pm["Pitch Match"].apply(lambda x:"🔥 ELITE" if x>=85 else "🟢 STRONG" if x>=75 else "🟡 GOOD" if x>=65 else "⚪ BELOW")
-    cols=["Pitch Rank","Batter","Opp SP","Pitch Mix","Pitch Match","Pitch Grade","HR Score","L10 Barrel%","L10 HardHit%","L10 AvgEV"]
+    cols=["Pitch Rank","Batter","Team","Opp SP","Pitch Mix","Pitch Match","Pitch Grade","HR Score","L10 Barrel%","L10 HardHit%","L10 AvgEV"]
     cols=[c for c in cols if c in pm.columns]
     st.dataframe(pm[cols],hide_index=True,use_container_width=True)
         
