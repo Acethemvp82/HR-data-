@@ -481,17 +481,21 @@ if run:
     m2.metric("Qualified",len(rankings[rankings["HR Score"]>=minimum]))
     m3.metric("Top",rankings.iloc[0]["HR Score"])
 
-    tabs=st.tabs(["🔥 Best HR Spots","🚀 Elite","📊 Full Board"])
+    tabs=st.tabs(["🔥 Best HR Spots","🎯 Pitch Mix","🚀 Elite","📊 Full Board"])
     with tabs[0]:
         if q.empty:st.info("No hitters meet the current minimum score.")
         else:
             for _,r in q.iterrows():card(r)
-    with tabs[1]:
+ with tabs[1]:
+    pm=rankings.sort_values("Pitch Match",ascending=False)
+    st.dataframe(pm,hide_index=True,use_container_width=True)
+
+with tabs[2]:
         elite=rankings[rankings["HR Score"]>=90].head(20)
         if elite.empty:st.info("No ELITE hitters on this slate.")
         else:
             for _,r in elite.iterrows():card(r)
-    with tabs[2]:
+    with tabs[3]:
         cols=["Rank","Batter","Team","Opponent","Opp SP","HR Score","Grade","Recent Score",
               "Pitch Match","Pitcher Vulnerability","Contact Checks","Contact Form","Pitch Match Available","Recent PA (14d)","L10 Barrel%","L10 HardHit%",
               "L10 AvgEV","L10 PullAir%","L10 PullBarrel%"]
