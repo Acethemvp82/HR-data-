@@ -79,7 +79,7 @@ def req_json(url, params=None):
     r.raise_for_status()
     return r.json()
 
-@st.cache_data(ttl=1800, show_spinner=False)
+@st.cache_data(ttl=300, show_spinner=False)
 def get_schedule(game_date):
     data = req_json(f"{MLB_API}/schedule", {
         "sportId":1, "date":game_date, "hydrate":"probablePitcher,team,venue"
