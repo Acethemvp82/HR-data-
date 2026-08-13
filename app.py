@@ -487,8 +487,12 @@ if run:
         else:
             for _,r in q.iterrows():card(r)
     with tabs[1]:
-        pm=rankings.sort_values("Pitch Match",ascending=False)
-        st.dataframe(pm,hide_index=True,use_container_width=True)
+            pm=rankings.sort_values("Pitch Match",ascending=False).reset_index(drop=True)
+    pm["Pitch Rank"]=range(1,len(pm)+1)
+    cols=["Pitch Rank","Batter","Opp SP","Pitch Mix","Pitch Match","HR Score","L10 Barrel%","L10 HardHit%","L10 AvgEV"]
+    cols=[c for c in cols if c in pm.columns]
+    st.dataframe(pm[cols],hide_index=True,use_container_width=True)
+        
 
     with tabs[2]:
         elite=rankings[rankings["HR Score"]>=90].head(20)
