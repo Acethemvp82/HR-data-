@@ -486,11 +486,11 @@ if run:
         if q.empty:st.info("No hitters meet the current minimum score.")
         else:
             for _,r in q.iterrows():card(r)
- with tabs[1]:
+    with tabs[1]:
     pm=rankings.sort_values("Pitch Match",ascending=False)
     st.dataframe(pm,hide_index=True,use_container_width=True)
 
-with tabs[2]:
+    with tabs[2]:
         elite=rankings[rankings["HR Score"]>=90].head(20)
         if elite.empty:st.info("No ELITE hitters on this slate.")
         else:
