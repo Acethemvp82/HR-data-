@@ -1,5 +1,7 @@
 
 from datetime import date, timedelta
+from datetime import datetime
+from zoneinfo import ZoneInfo
 import numpy as np
 import pandas as pd
 import requests
@@ -452,7 +454,8 @@ st.title("⚾ MLB HR Model V3.1")
 st.caption("Contact-first daily Statcast HR opportunity rankings")
 
 with st.expander("⚙️ Slate settings",expanded=True):
-    selected=st.date_input("Slate date",value=date.today())
+    ny_today=datetime.now(ZoneInfo("America/New_York")).date()
+    selected=st.date_input("Slate date",value=ny_today)
     c1,c2=st.columns(2)
     lookback=c1.selectbox("Statcast history",[30,45,60],index=1,format_func=lambda x:f"{x} days")
     shown=c2.selectbox("Show",[5,10,15,20,30],index=1,format_func=lambda x:f"Top {x}")
