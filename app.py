@@ -37,7 +37,7 @@ st.markdown("""
     background: #0f1720;
     border: 1px solid #1f2937;
     border-radius: 12px;
-    overflow: hidden;
+    overflow: visible;
 }
 
 [data-testid="stDataFrame"] [role="columnheader"] {
