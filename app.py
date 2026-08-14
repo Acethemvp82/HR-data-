@@ -19,6 +19,38 @@ st.set_page_config(
 
 st.markdown("""
 <style>
+.stApp {
+    background: linear-gradient(180deg, #0b1117 0%, #111827 100%);
+    color: #e6edf3;
+}
+
+[data-testid="stAppViewContainer"] {
+    background: linear-gradient(180deg, #0b1117 0%, #111827 100%);
+}
+
+[data-testid="stHeader"] {
+    background: rgba(11, 17, 23, 0.85);
+}
+
+/* HR board / dataframe styling */
+[data-testid="stDataFrame"] {
+    background: #0f1720;
+    border: 1px solid #1f2937;
+    border-radius: 12px;
+    overflow: hidden;
+}
+
+[data-testid="stDataFrame"] [role="columnheader"] {
+    background: #16202c !important;
+    color: #f8fafc !important;
+    font-weight: 700 !important;
+}
+
+[data-testid="stDataFrame"] [role="gridcell"] {
+    background: #0f1720;
+    color: #e6edf3;
+    border-color: #263241 !important;
+}
 .block-container{max-width:980px;padding:.75rem .65rem 4rem}
 h1{font-size:1.6rem!important;margin-bottom:.15rem!important}
 [data-testid="stMetric"]{border:1px solid rgba(128,128,128,.22);border-radius:14px;padding:.6rem}
