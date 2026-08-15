@@ -534,16 +534,16 @@ if run:
             return "background-color:#ef5350;color:white;font-weight:700;"
 
     def color_hr_score(v):
-     if pd.isna(v):
-        return ""
-     if v >= 90:
-        return "background-color:#66bb6a;color:black;font-weight:700;"
-    elif v >= 80:
-        return "background-color:#dce775;color:black;font-weight:700;"
-    elif v >= 70:
-        return "background-color:#ffcc80;color:black;font-weight:700;"
-    else:
-        return "background-color:#ff8a65;color:black;font-weight:700;"
+        if pd.isna(v):
+            return ""
+        if v >= 90:
+            return "background-color:#66bb6a;color:black;font-weight:700;"
+        elif v >= 80:
+            return "background-color:#dce775;color:black;font-weight:700;"
+        elif v >= 70:
+            return "background-color:#ffcc80;color:black;font-weight:700;"
+        else:
+            return "background-color:#ff8a65;color:black;font-weight:700;"
 
     def color_contact(v):
      if pd.isna(v):
