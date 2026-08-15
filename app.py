@@ -559,24 +559,24 @@ if run:
         return ""
     
     with tabs[1]:
-            pm=rankings.sort_values("Pitch Match",ascending=False).reset_index(drop=True)
-    pm["Pitch Rank"]=range(1,len(pm)+1)
-    pm["Pitch Grade"]=pm["Pitch Match"].apply(lambda x:"🔥 ELITE" if x>=85 else "🟢 STRONG" if x>=75 else "🟡 GOOD" if x>=65 else "⚪ BELOW")
-    cols=["Pitch Rank","Batter","Team","Opp SP","Pitch Mix","Pitch Match","Pitch Grade","HR Score","L10 Barrel%","L10 HardHit%","L10 AvgEV"]
-    cols=[c for c in cols if c in pm.columns]
-    styled_pm = pm[cols].style
+        pm=rankings.sort_values("Pitch Match",ascending=False).reset_index(drop=True)
+        pm["Pitch Rank"]=range(1,len(pm)+1)
+        pm["Pitch Grade"]=pm["Pitch Match"].apply(lambda x:"🔥 ELITE" if x>=85 else "🟢 STRONG" if x>=75 else "🟡 GOOD" if x>=65 else "⚪ BELOW")
+        cols=["Pitch Rank","Batter","Team","Opp SP","Pitch Mix","Pitch Match","Pitch Grade","HR Score","L10 Barrel%","L10 HardHit%","L10 AvgEV"]
+        cols=[c for c in cols if c in pm.columns]
+        styled_pm = pm[cols].style
 
-if "Pitch Match" in cols:
-    styled_pm = styled_pm.map(color_pitch_match, subset=["Pitch Match"])
+        if "Pitch Match" in cols:
+            styled_pm = styled_pm.map(color_pitch_match, subset=["Pitch Match"])
 
-if "HR Score" in cols:
-    styled_pm = styled_pm.map(color_hr_score, subset=["HR Score"])
+        if "HR Score" in cols:
+            styled_pm = styled_pm.map(color_hr_score, subset=["HR Score"])
 
-for c in ["L10 Barrel%", "L10 HardHit%"]:
-    if c in cols:
-        styled_pm = styled_pm.map(color_contact, subset=[c])
+        for c in ["L10 Barrel%", "L10 HardHit%"]:
+            if c in cols:
+                styled_pm = styled_pm.map(color_contact, subset=[c])
 
-st.dataframe(styled_pm, hide_index=True, use_container_width=True)
+        st.dataframe(styled_pm, hide_index=True, use_container_width=True)
         
 
     with tabs[2]:
