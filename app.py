@@ -530,7 +530,7 @@ if run:
             return "background-color:#81c784;color:black;font-weight:700;"
         elif v >= 60:
             return "background-color:#ffd54f;color:black;font-weight:700;"
-    else:
+        else:
             return "background-color:#ef5350;color:white;font-weight:700;"
 
     def color_hr_score(v):
