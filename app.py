@@ -521,13 +521,62 @@ if run:
         if q.empty:st.info("No hitters meet the current minimum score.")
         else:
             for _,r in q.iterrows():card(r)
+    def color_pitch_match(v):
+    if pd.isna(v):
+        return ""
+    if v >= 98:
+        return "background-color:#2e7d32;color:white;font-weight:700;"
+    elif v >= 95:
+        return "background-color:#81c784;color:black;font-weight:700;"
+    elif v >= 90:
+        return "background-color:#ffd54f;color:black;font-weight:700;"
+    else:
+        return "background-color:#ef5350;color:white;font-weight:700;"
+
+    def color_hr_score(v):
+    if pd.isna(v):
+        return ""
+    if v >= 90:
+        return "background-color:#66bb6a;color:black;font-weight:700;"
+    elif v >= 80:
+        return "background-color:#dce775;color:black;font-weight:700;"
+    elif v >= 70:
+        return "background-color:#ffcc80;color:black;font-weight:700;"
+    else:
+        return "background-color:#ff8a65;color:black;font-weight:700;"
+
+    def color_contact(v):
+    if pd.isna(v):
+        return ""
+    if v >= 50:
+        return "background-color:#66bb6a;color:black;font-weight:700;"
+    elif v >= 30:
+        return "background-color:#c5e1a5;color:black;font-weight:700;"
+    elif v >= 20:
+        return "background-color:#fff176;color:black;font-weight:700;"
+    elif v > 0:
+        return "background-color:#ffe0b2;color:black;"
+    return ""
+    
     with tabs[1]:
             pm=rankings.sort_values("Pitch Match",ascending=False).reset_index(drop=True)
     pm["Pitch Rank"]=range(1,len(pm)+1)
     pm["Pitch Grade"]=pm["Pitch Match"].apply(lambda x:"🔥 ELITE" if x>=85 else "🟢 STRONG" if x>=75 else "🟡 GOOD" if x>=65 else "⚪ BELOW")
     cols=["Pitch Rank","Batter","Team","Opp SP","Pitch Mix","Pitch Match","Pitch Grade","HR Score","L10 Barrel%","L10 HardHit%","L10 AvgEV"]
     cols=[c for c in cols if c in pm.columns]
-    st.dataframe(pm[cols],hide_index=True,use_container_width=True)
+    styled_pm = pm[cols].style
+
+if "Pitch Match" in cols:
+    styled_pm = styled_pm.map(color_pitch_match, subset=["Pitch Match"])
+
+if "HR Score" in cols:
+    styled_pm = styled_pm.map(color_hr_score, subset=["HR Score"])
+
+for c in ["L10 Barrel%", "L10 HardHit%"]:
+    if c in cols:
+        styled_pm = styled_pm.map(color_contact, subset=[c])
+
+st.dataframe(styled_pm, hide_index=True, use_container_width=True)
         
 
     with tabs[2]:
