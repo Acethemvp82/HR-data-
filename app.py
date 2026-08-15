@@ -546,17 +546,17 @@ if run:
             return "background-color:#ff8a65;color:black;font-weight:700;"
 
     def color_contact(v):
-     if pd.isna(v):
+        if pd.isna(v):
+            return ""
+        if v >= 50:
+            return "background-color:#66bb6a;color:black;font-weight:700;"
+        elif v >= 30:
+            return "background-color:#c5e1a5;color:black;font-weight:700;"
+        elif v >= 20:
+            return "background-color:#fff176;color:black;font-weight:700;"
+        elif v > 0:
+            return "background-color:#ffe0b2;color:black;font-weight:700;"
         return ""
-     if v >= 50:
-        return "background-color:#66bb6a;color:black;font-weight:700;"
-    elif v >= 30:
-        return "background-color:#c5e1a5;color:black;font-weight:700;"
-    elif v >= 20:
-        return "background-color:#fff176;color:black;font-weight:700;"
-    elif v > 0:
-        return "background-color:#ffe0b2;color:black;"
-    return ""
     
     with tabs[1]:
             pm=rankings.sort_values("Pitch Match",ascending=False).reset_index(drop=True)
