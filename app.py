@@ -522,16 +522,16 @@ if run:
         else:
             for _,r in q.iterrows():card(r)
     def color_pitch_match(v):
-        if pd.isna(v):
-            return ""
-        if v >= 98:
-            return "background-color:#2e7d32;color:white;font-weight:700;"
-        elif v >= 95:
-            return "background-color:#81c784;color:black;font-weight:700;"
-        elif v >= 90:
-            return "background-color:#ffd54f;color:black;font-weight:700;"
-        else:
-            return "background-color:#ef5350;color:white;font-weight:700;"
+    if pd.isna(v):
+        return ""
+    if v >= 85:
+        return "background-color:#2e7d32;color:white;font-weight:700;"
+    elif v >= 75:
+        return "background-color:#81c784;color:black;font-weight:700;"
+    elif v >= 60:
+        return "background-color:#ffd54f;color:black;font-weight:700;"
+    else:
+        return "background-color:#ef5350;color:white;font-weight:700;"
 
     def color_hr_score(v):
         if pd.isna(v):
