@@ -578,7 +578,11 @@ if run:
 
         if "Pitch Match" in cols:
             styled_pm = styled_pm.map(color_pitch_match, subset=["Pitch Match"])
-
+        if "Pitcher Vulnerability" in cols:
+            styled_pm = styled_pm.map(
+                color_pitcher_vulnerability,
+                subset=["Pitcher Vulnerability"]
+    )
         if "HR Score" in cols:
             styled_pm = styled_pm.map(color_hr_score, subset=["HR Score"])
 
