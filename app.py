@@ -557,7 +557,17 @@ if run:
         elif v > 0:
             return "background-color:#ffe0b2;color:black;font-weight:700;"
         return ""
-    
+    def color_pitcher_vulnerability(v):
+        if pd.isna(v):
+            return ""
+        if v >= 85:
+          return "background-color:#66bb6a;color:black;font-weight:bold"
+        elif v >= 75:
+            return "background-color:#dce775;color:black;font-weight:bold"
+        elif v >= 65:
+            return "background-color:#ffcc80;color:black;font-weight:bold"
+        else:
+            return "background-color:#ff7043;color:black;font-weight:bold"
     with tabs[1]:
         pm=rankings.sort_values("Pitch Match",ascending=False).reset_index(drop=True)
         pm["Pitch Rank"]=range(1,len(pm)+1)
