@@ -132,7 +132,40 @@ def get_schedule(game_date):
                 "status":g.get("status",{}).get("detailedState",""),
             })
     return pd.DataFrame(rows)
+@st.cache_data(ttl=300, show_spinner=False)
+def get_lineup_spots(game_date):
+    schedule = req_json(f"{MLB_API}/schedule", {
+        "sportId": 1,
+        "date": game_date
+    })
 
+    rows = []
+
+    for d in schedule.get("dates", []):
+        for g in d.get("games", []):
+            game_pk = g["gamePk"]
+
+            feed = req_json(
+                f"https://statsapi.mlb.com/api/v1.1/game/{game_pk}/feed/live"
+            )
+
+            box = feed.get("liveData", {}).get("boxscore", {}).get("teams", {})
+
+            for side in ["away", "home"]:
+                team_data = box.get(side, {})
+                team_name = team_data.get("team", {}).get("name")
+
+                for p in team_data.get("players", {}).values():
+                    batting_order = p.get("battingOrder")
+
+                    if batting_order:
+                        rows.append({
+                            "Batter": p["person"]["fullName"],
+                            "Team": team_name,
+                            "Lineup Spot": int(str(batting_order)) // 100
+                        })
+
+    return pd.DataFrame(rows)
 @st.cache_data(ttl=1800, show_spinner=False)
 def get_roster(team_id):
     data=req_json(f"{MLB_API}/teams/{team_id}/roster",{"rosterType":"active"})
@@ -498,7 +531,10 @@ with st.expander("⚙️ Slate settings",expanded=True):
 
 if run:
     with st.spinner("Building and calibrating today's Statcast board..."):
-        rankings,schedule=build(str(selected),int(lookback),int(pool))
+        rankings,schedule=build(str(selected),int(lookback),int(pool)) 
+        lineups = get_lineup_spots(str(selected))
+        if not lineups.empty:
+    rankings = rankings.merge(lineups, on=["Batter", "Team"], how="left")
     if schedule.empty:
         st.warning("No MLB games found.");st.stop()
 
@@ -572,7 +608,7 @@ if run:
         pm=rankings.sort_values("Pitch Match",ascending=False).reset_index(drop=True)
         pm["Pitch Rank"]=range(1,len(pm)+1)
         pm["Pitch Grade"]=pm["Pitch Match"].apply(lambda x:"🔥 ELITE" if x>=85 else "🟢 STRONG" if x>=75 else "🟡 GOOD" if x>=65 else "⚪ BELOW")
-        cols=["Pitch Rank","Batter","Team","Opp SP", "Pitcher Vulnerability","Pitch Mix","Pitch Match","Pitch Grade","HR Score","L10 Barrel%","L10 HardHit%","L10 AvgEV"]
+        cols=["Pitch Rank","Batter","Lineup Spot","Team","Opp SP", "Pitcher Vulnerability","Pitch Mix","Pitch Match","Pitch Grade","HR Score","L10 Barrel%","L10 HardHit%","L10 AvgEV"]
         cols=[c for c in cols if c in pm.columns]
         styled_pm = pm[cols].style
 
