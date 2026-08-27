@@ -647,7 +647,7 @@ styled_pm = pm[cols].style
 
 if "Pitch Match" in cols: 
     if "Pitch Match" in cols:
-    styled_pm = styled_pm.map(color_pitch_match, subset=["Pitch Match"])
+        styled_pm = styled_pm.map(color_pitch_match, subset=["Pitch Match"])
 
 if "Pitcher Vulnerability" in cols:
     styled_pm = styled_pm.map(
