@@ -552,7 +552,7 @@ if run:
     m2.metric("Qualified",len(rankings[rankings["HR Score"]>=minimum]))
     m3.metric("Top",rankings.iloc[0]["HR Score"])
 
-    tabs=st.tabs(["🔥 Best HR Spots","🎯 Pitch Mix","🚀 Elite","📊 Full Board"])
+    tabs=st.tabs(["🔥 Best HR Spots","🎯 Pitch Mix","🔗 Pairings","🚀 Elite","📊 Full Board"])
     with tabs[0]:
         if q.empty:st.info("No hitters meet the current minimum score.")
         else:
@@ -677,13 +677,118 @@ if run:
             use_container_width=True
         )
         
+        with tabs[2]:
+        st.subheader("🔗 Pitch Mix Pairings")
+        st.caption("Pairings are generated directly from the Pitch Mix board.")
 
-    with tabs[2]:
+        from itertools import combinations
+
+        pair_pool = pm.copy()
+
+        # Only use legitimate HR candidates from Pitch Mix
+        pair_pool = pair_pool[
+            (pair_pool["Pitch Match"] >= 70) &
+            (pair_pool["HR Score"] >= 70)
+        ].copy()
+
+        # Safe lineup score — lineup data may not be available yet
+        if "Lineup Spot" in pair_pool.columns:
+            def lineup_score(x):
+                if pd.isna(x):
+                    return 70
+                x = int(float(x))
+                if x in [2, 3]:
+                    return 100
+                elif x in [1, 4]:
+                    return 90
+                elif x == 5:
+                    return 80
+                return 60
+
+            pair_pool["Lineup Score"] = pair_pool["Lineup Spot"].apply(lineup_score)
+        else:
+            pair_pool["Lineup Score"] = 70
+
+        # Normalize L10 AvgEV to a 0-100 confirmation score
+        pair_pool["EV Score"] = (
+            (pair_pool["L10 AvgEV"].fillna(80) - 80) * 5
+        ).clip(0, 100)
+
+        # Individual score used ONLY for pairing — does not alter the HR model
+        pair_pool["Pair Score"] = (
+            pair_pool["Pitch Match"].fillna(0) * 0.30 +
+            pair_pool["HR Score"].fillna(0) * 0.25 +
+            pair_pool["Pitcher Vulnerability"].fillna(0) * 0.15 +
+            pair_pool["L10 HardHit%"].fillna(0) * 0.10 +
+            pair_pool["L10 Barrel%"].fillna(0) * 0.10 +
+            pair_pool["EV Score"].fillna(0) * 0.05 +
+            pair_pool["Lineup Score"].fillna(70) * 0.05
+        )
+
+        # Keep the strongest Pitch Mix candidates before creating combinations
+        pair_pool = pair_pool.sort_values(
+            ["Pair Score", "Pitch Match"],
+            ascending=False
+        ).head(15)
+
+        # ---------- 2-LEG PAIRINGS ----------
+        pair_rows = []
+
+        for a, b in combinations(pair_pool.to_dict("records"), 2):
+            score = (a["Pair Score"] + b["Pair Score"]) / 2
+
+            # Small diversification bonus for different teams
+            if a.get("Team") != b.get("Team"):
+                score += 2
+
+            pair_rows.append({
+                "Pairing": f'{a["Batter"]} + {b["Batter"]}',
+                "Pairing Score": round(score, 1),
+                "Pitch Match": f'{a["Pitch Match"]:.1f} / {b["Pitch Match"]:.1f}',
+                "HR Score": f'{a["HR Score"]:.1f} / {b["HR Score"]:.1f}',
+                "Teams": f'{a.get("Team","")} / {b.get("Team","")}'
+            })
+
+        pairs = pd.DataFrame(pair_rows).sort_values(
+            "Pairing Score",
+            ascending=False
+        ).head(10)
+
+        st.markdown("### 🔥 Best 2-Leg Pairings")
+        st.dataframe(pairs, hide_index=True, use_container_width=True)
+
+        # ---------- 3-LEG PAIRINGS ----------
+        triple_rows = []
+
+        for a, b, c in combinations(pair_pool.to_dict("records"), 3):
+            score = (
+                a["Pair Score"] +
+                b["Pair Score"] +
+                c["Pair Score"]
+            ) / 3
+
+            teams = {a.get("Team"), b.get("Team"), c.get("Team")}
+            score += (len(teams) - 1)
+
+            triple_rows.append({
+                "3-Leg Pairing": f'{a["Batter"]} + {b["Batter"]} + {c["Batter"]}',
+                "Pairing Score": round(score, 1),
+                "Teams": f'{a.get("Team","")} / {b.get("Team","")} / {c.get("Team","")}'
+            })
+
+        triples = pd.DataFrame(triple_rows).sort_values(
+            "Pairing Score",
+            ascending=False
+        ).head(10)
+
+        st.markdown("### 🚀 Best 3-Leg Pairings")
+        st.dataframe(triples, hide_index=True, use_container_width=True)
+    with tabs[3]:
         elite=rankings[rankings["HR Score"]>=90].head(20)
         if elite.empty:st.info("No ELITE hitters on this slate.")
         else:
             for _,r in elite.iterrows():card(r)
-    with tabs[3]:
+    with tabs[4]:
         cols=["Rank","Batter","Team","Opponent","Opp SP","HR Score","Grade","Recent Score",
               "Pitch Match","Pitcher Vulnerability","Contact Checks","Contact Form","Pitch Match Available","Recent PA (14d)","L10 Barrel%","L10 HardHit%",
               "L10 AvgEV","L10 PullAir%","L10 PullBarrel%"]
