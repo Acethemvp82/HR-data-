@@ -687,8 +687,8 @@ if run:
 
         # Only use legitimate Pitch Mix HR candidates
         pair_pool = pair_pool[
-            (pair_pool["Pitch Match"] >= 70) &
-            (pair_pool["HR Score"] >= 70)
+            (pair_pool["Pitch Match"] >= 70) 
+    
         ].copy()
 
         # Lineup bonus when confirmed lineup data is available
