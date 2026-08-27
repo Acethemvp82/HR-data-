@@ -641,9 +641,9 @@ if run:
     "Washington Nationals": "WSH"
 }
 pm["Team"] = pm["Team"].replace(team_abbr)
-        cols=["Pitch Rank","Batter","Lineup Spot","Team","Opp SP","Pitch Match","HR Score","Pitcher Vulnerability","Pitch Mix","Pitch Grade","L10 Barrel%","L10 HardHit%","L10 AvgEV"]
-        cols=[c for c in cols if c in pm.columns]
-        styled_pm = pm[cols].style
+cols=["Pitch Rank","Batter","Lineup Spot","Team","Opp SP","Pitch Match","HR Score","Pitcher Vulnerability","Pitch Mix","Pitch Grade","L10 Barrel%","L10 HardHit%","L10 AvgEV"]
+cols=[c for c in cols if c in pm.columns]
+styled_pm = pm[cols].style
 
         if "Pitch Match" in cols:
             styled_pm = styled_pm.map(color_pitch_match, subset=["Pitch Match"])
