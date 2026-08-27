@@ -642,7 +642,7 @@ if run:
 }
         pm["Team"] = pm["Team"].replace(team_abbr)
 
-        cols = ["Pitch Rank", "Batter", "Lineup Spot", "Team", "Opp SP", "Pitch Match", "HR Score", "Pitcher Vulnerability", "L10 Barrel%", "L10 HardHit%"]
+        cols = ["Pitch Rank", "Batter", "Lineup Spot", "Team", "Opp SP", "Pitch Match", "HR Score", "Pitcher Vulnerability", "L10 AvgEV", "L10 Barrel%", "L10 HardHit%"]
         cols = [c for c in cols if c in pm.columns]
         styled_pm = pm[cols].style
 
