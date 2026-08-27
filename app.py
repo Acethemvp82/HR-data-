@@ -645,11 +645,11 @@ cols=["Pitch Rank","Batter","Lineup Spot","Team","Opp SP","Pitch Match","HR Scor
 cols=[c for c in cols if c in pm.columns]
 styled_pm = pm[cols].style
 
-if "Pitch Match" in cols:
-            styled_pm = styled_pm.map(color_pitch_match, subset=["Pitch Match"])  if "Pitcher Vulnerability" in cols:
-            styled_pm = styled_pm.map(
-                color_pitcher_vulnerability,
-                subset=["Pitcher Vulnerability"]
+if "Pitch Match" in cols: 
+styled_pm = styled_pm.map(color_pitch_match, subset=["Pitch Match"])  if "Pitcher Vulnerability" in cols:
+styled_pm = styled_pm.map(
+color_pitcher_vulnerability,
+subset=["Pitcher Vulnerability"]
     )
  if "HR Score" in cols:
             styled_pm = styled_pm.map(color_hr_score, subset=["HR Score"])
