@@ -640,7 +640,6 @@ if run:
     "Toronto Blue Jays": "TOR",
     "Washington Nationals": "WSH"
 }
-
 pm["Team"] = pm["Team"].replace(team_abbr)
         cols=["Pitch Rank","Batter","Lineup Spot","Team","Opp SP","Pitch Match","HR Score","Pitcher Vulnerability","Pitch Mix","Pitch Grade","L10 Barrel%","L10 HardHit%","L10 AvgEV"]
         cols=[c for c in cols if c in pm.columns]
