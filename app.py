@@ -742,47 +742,7 @@ if run:
                 score += 2
 
             pair_rows.append({
-                "Pairing": f'{a["Batter"]} + {b["Batter"]}',
-                "Pairing Score": round(score, 1),
-                "Pitch Match": f'{a["Pitch Match"]:.1f} / {b["Pitch Match"]:.1f}',
-                "HR Score": f'{a["HR Score"]:.1f} / {b["HR Score"]:.1f}',
-                "Teams": f'{a.get("Team","")} / {b.get("Team","")}'
-            })
-
-        pairs = pd.DataFrame(pair_rows).sort_values(
-            "Pairing Score",
-            ascending=False
-        ).head(10)
-
-        st.markdown("### 🔥 Best 2-Leg Pairings")
-        st.dataframe(pairs, hide_index=True, use_container_width=True)
-
-        # ---------- 3-LEG PAIRINGS ----------
-        triple_rows = []
-
-        for a, b, c in combinations(pair_pool.to_dict("records"), 3):
-            score = (
-                a["Pair Score"] +
-                b["Pair Score"] +
-                c["Pair Score"]
-            ) / 3
-
-            teams = {a.get("Team"), b.get("Team"), c.get("Team")}
-            score += (len(teams) - 1)
-
-            triple_rows.append({
-                "3-Leg Pairing": f'{a["Batter"]} + {b["Batter"]} + {c["Batter"]}',
-                "Pairing Score": round(score, 1),
-                "Teams": f'{a.get("Team","")} / {b.get("Team","")} / {c.get("Team","")}'
-            })
-
-        triples = pd.DataFrame(triple_rows).sort_values(
-            "Pairing Score",
-            ascending=False
-        ).head(10)
-
-        st.markdown("### 🚀 Best 3-Leg Pairings")
-        st.dataframe(triples, hide_index=True, use_container_width=True)
+ 
     with tabs[3]:
         elite=rankings[rankings["HR Score"]>=90].head(20)
         if elite.empty:st.info("No ELITE hitters on this slate.")
