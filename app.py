@@ -684,6 +684,21 @@ if run:
             from itertools import combinations
 
             pair_pool = pm.copy()
+            # Remove hitters from games that have already started or finished
+            active_games = schedule[
+                schedule["status"].isin([
+                    "Scheduled",
+                    "Pre-Game",
+                     "Warmup",
+                     "Delayed Start"
+                 ])
+             ].copy()
+
+             active_teams = set(active_games["away"]).union(set(active_games["home"]))
+
+             pair_pool = pair_pool[
+                 pair_pool["Team"].isin(active_teams)
+             ].copy()
 
             # Only use legitimate Pitch Mix HR candidates
             pair_pool = pair_pool[
