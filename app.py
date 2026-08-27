@@ -687,7 +687,7 @@ if run:
 
             # Only use legitimate Pitch Mix HR candidates
             pair_pool = pair_pool[
-            (pair_pool["Pitch Match"] >= 70) 
+                (pair_pool["Pitch Match"] >= 70) 
     
             ].copy()
 
@@ -710,92 +710,92 @@ if run:
             else:
                 pair_pool["Lineup Bonus"] = 0
 
-             # Build individual pairing score
-             pair_pool["Pair Score"] = (
-                 pair_pool["Pitch Match"] * 0.60 +
-                 pair_pool["HR Score"] * 0.20 +
-                 pair_pool["Pitcher Vulnerability"] * 0.10 +
-                 pair_pool["Lineup Bonus"] * 2
-             )
+            # Build individual pairing score
+            pair_pool["Pair Score"] = (
+                pair_pool["Pitch Match"] * 0.60 +
+                pair_pool["HR Score"] * 0.20 +
+                pair_pool["Pitcher Vulnerability"] * 0.10 +
+                pair_pool["Lineup Bonus"] * 2
+            )
 
-             # Reward recent barrel production
-             if "L10 Barrel%" in pair_pool.columns:
-                 pair_pool["Pair Score"] += pair_pool["L10 Barrel%"].fillna(0) * 0.10
+            # Reward recent barrel production
+            if "L10 Barrel%" in pair_pool.columns:
+                pair_pool["Pair Score"] += pair_pool["L10 Barrel%"].fillna(0) * 0.10
 
-             # Reward recent hard contact
-             if "L10 HardHit%" in pair_pool.columns:
-                 pair_pool["Pair Score"] += pair_pool["L10 HardHit%"].fillna(0) * 0.05
+            # Reward recent hard contact
+            if "L10 HardHit%" in pair_pool.columns:
+                pair_pool["Pair Score"] += pair_pool["L10 HardHit%"].fillna(0) * 0.05
 
-             # Keep strongest Pitch Mix candidates
-             pair_pool = pair_pool.sort_values(
-                 ["Pair Score", "Pitch Match"],
-                 ascending=False
-             ).head(15)
+            # Keep strongest Pitch Mix candidates
+            pair_pool = pair_pool.sort_values(
+                ["Pair Score", "Pitch Match"],
+                ascending=False
+            ).head(15)
 
-             # ---------- 2-LEG PAIRINGS ----------
-             pair_rows = []
+            # ---------- 2-LEG PAIRINGS ----------
+            pair_rows = []
 
-             for a, b in combinations(pair_pool.to_dict("records"), 2):
-                 score = a["Pair Score"] + b["Pair Score"]
+            for a, b in combinations(pair_pool.to_dict("records"), 2):
+                score = a["Pair Score"] + b["Pair Score"]
 
-                 # Small diversification bonus for different teams
-                 if a.get("Team") != b.get("Team"):
-                     score += 2
+                # Small diversification bonus for different teams
+                if a.get("Team") != b.get("Team"):
+                    score += 2
 
-                 pair_rows.append({
-                     "2-Leg Pairing": f'{a["Batter"]} + {b["Batter"]}',
-                     "Pairing Score": round(score, 2),
-                     "Teams": f'{a.get("Team", "")} / {b.get("Team", "")}'
-                 })
+                pair_rows.append({
+                    "2-Leg Pairing": f'{a["Batter"]} + {b["Batter"]}',
+                    "Pairing Score": round(score, 2),
+                    "Teams": f'{a.get("Team", "")} / {b.get("Team", "")}'
+                })
 
-             pairs = pd.DataFrame(pair_rows)
+            pairs = pd.DataFrame(pair_rows)
 
-             if not pairs.empty:
-                 pairs = pairs.sort_values(
-                     "Pairing Score",
-                     ascending=False
-                 ).head(15)
+            if not pairs.empty:
+                pairs = pairs.sort_values(
+                    "Pairing Score",
+                    ascending=False
+                ).head(15)
 
-                 st.markdown("### 🔗 Best 2-Leg Pairings")
-                 st.dataframe(
-                     pairs,
-                     hide_index=True,
-                     use_container_width=True
-                 )
-             else:
-                 st.info("Not enough qualifying Pitch Mix hitters for 2-leg pairings.")
+                st.markdown("### 🔗 Best 2-Leg Pairings")
+                st.dataframe(
+                    pairs,
+                    hide_index=True,
+                    use_container_width=True
+                )
+            else:
+                st.info("Not enough qualifying Pitch Mix hitters for 2-leg pairings.")
 
-             # ---------- 3-LEG PAIRINGS ----------
-             triple_rows = []
+            # ---------- 3-LEG PAIRINGS ----------
+            triple_rows = []
 
-             for a, b, c in combinations(pair_pool.to_dict("records"), 3):
-                 score = a["Pair Score"] + b["Pair Score"] + c["Pair Score"]
+            for a, b, c in combinations(pair_pool.to_dict("records"), 3):
+                score = a["Pair Score"] + b["Pair Score"] + c["Pair Score"]
 
-                 teams = {a.get("Team"), b.get("Team"), c.get("Team")}
-                 score += (len(teams) - 1) * 2
+                teams = {a.get("Team"), b.get("Team"), c.get("Team")}
+                score += (len(teams) - 1) * 2
 
-                 triple_rows.append({
-                     "3-Leg Pairing": f'{a["Batter"]} + {b["Batter"]} + {c["Batter"]}',
-                     "Pairing Score": round(score, 2),
-                     "Teams": f'{a.get("Team", "")} / {b.get("Team", "")} / {c.get("Team", "")}'
-                 })
+                triple_rows.append({
+                    "3-Leg Pairing": f'{a["Batter"]} + {b["Batter"]} + {c["Batter"]}',
+                    "Pairing Score": round(score, 2),
+                    "Teams": f'{a.get("Team", "")} / {b.get("Team", "")} / {c.get("Team", "")}'
+                })
 
-             triples = pd.DataFrame(triple_rows)
+            triples = pd.DataFrame(triple_rows)
 
-             if not triples.empty:
-                 triples = triples.sort_values(
-                     "Pairing Score",
-                     ascending=False
-                 ).head(10)
+            if not triples.empty:
+                triples = triples.sort_values(
+                    "Pairing Score",
+                    ascending=False
+                ).head(10)
 
-                 st.markdown("### 🚀 Best 3-Leg Pairings")
-                 st.dataframe(
-                     triples,
-                     hide_index=True,
-                     use_container_width=True
-                 )
-             else:
-                 st.info("Not enough qualifying Pitch Mix hitters for 3-leg pairings.")
+                st.markdown("### 🚀 Best 3-Leg Pairings")
+                st.dataframe(
+                    triples,
+                    hide_index=True,
+                    use_container_width=True
+                )
+            else:
+                st.info("Not enough qualifying Pitch Mix hitters for 3-leg pairings.")
     with tabs[3]:
         elite=rankings[rankings["HR Score"]>=90].head(20)
         if elite.empty:st.info("No ELITE hitters on this slate.")
