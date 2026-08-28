@@ -540,10 +540,15 @@ if run:
         st.warning("No MLB games found.");st.stop()
 
     st.markdown(f"### Slate — {selected.strftime('%B %d, %Y')}")
-    for _,g in schedule.iterrows():
-        st.markdown(f"<div class='note'><b>{g['away']} @ {g['home']}</b><br>"
-                    f"<span class='muted'>{g['away_sp'] or 'TBD'} vs {g['home_sp'] or 'TBD'} · {g['venue']}</span></div>",
-                    unsafe_allow_html=True)
+    for _, g in schedule.iterrows():
+        game_time = pd.to_datetime(g["game_time"], utc=True).tz_convert("America/New_York")
+        time_text = game_time.strftime("%-I:%M %p ET")
+
+        st.markdown(
+            f"<div class='note'><b>{g['away']} @ {g['home']}</b><br>"
+            f"<span class='muted'>{g['away_sp'] or 'TBD'} vs {g['home_sp'] or 'TBD'} · {time_text} · {g['venue']}</span></div>",
+            unsafe_allow_html=True
+    )
     if rankings.empty:
         st.warning("No hitters were scored.");st.stop()
 
