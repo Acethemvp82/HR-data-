@@ -691,14 +691,14 @@ if run:
                     "Pre-Game",
                     "Warmup",
                     "Delayed Start"
-                ])
+                 ])
              ].copy()
 
-             active_teams = set(active_games["away"]).union(set(active_games["home"]))
+            active_teams = set(active_games["away"]).union(set(active_games["home"]))
 
-             pair_pool = pair_pool[
+            pair_pool = pair_pool[
                  pair_pool["Team"].isin(active_teams)
-             ].copy()
+            ].copy()
 
             # Only use legitimate Pitch Mix HR candidates
             pair_pool = pair_pool[
