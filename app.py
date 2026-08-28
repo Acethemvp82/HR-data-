@@ -538,7 +538,7 @@ if run:
     if schedule.empty:
         st.warning("No MLB games found.");st.stop()
 
-    st.markdown("### 📅 Slate")
+    st.markdown(f"### Slate — {selected.strftime('%B %d, %Y')}")
     for _,g in schedule.iterrows():
         st.markdown(f"<div class='note'><b>{g['away']} @ {g['home']}</b><br>"
                     f"<span class='muted'>{g['away_sp'] or 'TBD'} vs {g['home_sp'] or 'TBD'} · {g['venue']}</span></div>",
