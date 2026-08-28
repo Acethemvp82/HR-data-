@@ -129,6 +129,7 @@ def get_schedule(game_date):
                 "home_sp_id":g["teams"]["home"].get("probablePitcher",{}).get("id"),
                 "home_sp":g["teams"]["home"].get("probablePitcher",{}).get("fullName"),
                 "venue":g.get("venue",{}).get("name",""),
+                "game_time": g.get("gameDate", ""),
                 "status":g.get("status",{}).get("detailedState",""),
             })
     return pd.DataFrame(rows)
