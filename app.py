@@ -694,10 +694,14 @@ if run:
                  ])
              ].copy()
 
-            active_teams = set(active_games["away"]).union(set(active_games["home"]))
+            active_teams = set(
+                active_games["away"].replace(team_abbr)
+            ).union(
+                set(active_games["home"].replace(team_abbr))
+            )
 
             pair_pool = pair_pool[
-                 pair_pool["Team"].isin(active_teams)
+                pair_pool["Team"].isin(active_teams)
             ].copy()
 
             # Only use legitimate Pitch Mix HR candidates
