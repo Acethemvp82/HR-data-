@@ -689,9 +689,9 @@ if run:
                 schedule["status"].isin([
                     "Scheduled",
                     "Pre-Game",
-                     "Warmup",
-                     "Delayed Start"
-                 ])
+                    "Warmup",
+                    "Delayed Start"
+                ])
              ].copy()
 
              active_teams = set(active_games["away"]).union(set(active_games["home"]))
