@@ -773,7 +773,7 @@ if run:
                 pairs = pairs.sort_values(
                     "Pairing Score",
                     ascending=False
-                ).head(40)
+                ).head(35)
 
                 st.markdown("### 🔗 Best 2-Leg Pairings")
                 st.dataframe(
@@ -805,7 +805,7 @@ if run:
                 triples = triples.sort_values(
                     "Pairing Score",
                     ascending=False
-                ).head(40)
+                ).head(35)
 
                 st.markdown("### 🚀 Best 3-Leg Pairings")
                 st.dataframe(
