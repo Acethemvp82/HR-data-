@@ -444,7 +444,7 @@ def build(game_date,lookback_days,projected_pool):
                 recent_raw=.60*s10+.40*s15
                 match_raw=pitch_match_raw(bdf,pmix)
                 rows.append({
-                    "Batter":name,"Team":team,"Opponent":opp,"Opp SP":spname or "TBD",
+                    "Batter":name,"Team":team, "Game Time":g.get("game_time",""), "Opponent":opp,"Opp SP":spname or "TBD",
                     "Recent PA (14d)":pa,"Recent BBE Available":bbe,
                     "Recent Raw":recent_raw,"Pitch Match Raw":match_raw,"Pitcher Raw":praw,
                     "SP Primary Pitches":", ".join(f"{pt} {u:.0%}" for pt,u in pmix) or "N/A",
