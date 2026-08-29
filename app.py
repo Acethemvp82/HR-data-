@@ -134,25 +134,31 @@ def get_schedule(game_date):
                 "status":g.get("status",{}).get("detailedState",""),
             })
     return pd.DataFrame(rows)
-    @st.cache_data(ttl=60, show_spinner=False)
-    def get_game_homers(game_pk):
-        data = req_json(f"{MLB_API}/game/{int(game_pk)}/feed/live")
+@st.cache_data(ttl=60, show_spinner=False)
+def get_game_homers(game_pk):
+    data = req_json(
+        f"{MLB_API}/game/{int(game_pk)}/feed/live"
+    )
 
-        homers = []
+    homers = []
 
-        plays = data.get("liveData", {}).get("plays", {}).get("allPlays", [])
+    plays = (
+        data.get("liveData", {})
+        .get("plays", {})
+        .get("allPlays", [])
+    )
 
-        for play in plays:
-            result = play.get("result", {})
+    for play in plays:
+        result = play.get("result", {})
 
-            if result.get("eventType") == "home_run":
-                batter = play.get("matchup", {}).get("batter", {})
+        if result.get("eventType") == "home_run":
+            batter = play.get("matchup", {}).get("batter", {})
 
-                homers.append({
-                    "Batter": batter.get("fullName", ""),
-                    "batter_id": batter.get("id"),
-                    "HR": "💣"
-                })
+            homers.append({
+                "Batter": batter.get("fullName", ""),
+                "batter_id": batter.get("id"),
+                "HR": "💣"
+            })
 
     return homers
 @st.cache_data(ttl=300, show_spinner=False)
