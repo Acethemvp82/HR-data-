@@ -136,9 +136,12 @@ def get_schedule(game_date):
     return pd.DataFrame(rows)
 @st.cache_data(ttl=60, show_spinner=False)
 def get_game_homers(game_pk):
-    data = req_json(
-        f"{MLB_API}/game/{int(game_pk)}/feed/live"
-    )
+    try:
+        data = req_json(
+            f"{MLB_API}/game/{int(game_pk)}/feed/live"
+        )
+    except Exception:
+        return []
 
     homers = []
 
