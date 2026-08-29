@@ -138,7 +138,7 @@ def get_schedule(game_date):
 def get_game_homers(game_pk):
     try:
         data = req_json(
-            f"{MLB_API}/game/{int(game_pk)}/feed/live"
+            f"https://statsapi.mlb.com/api/v1.1/game/{int(game_pk)}/feed/live"
         )
     except Exception:
         return []
