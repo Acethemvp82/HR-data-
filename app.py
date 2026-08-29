@@ -870,10 +870,9 @@ if run:
 else:
     st.markdown("<div class='note'>V3 is contact-first. Hitters need real L10 contact confirmations before "
                 "the model can label them GOOD, STRONG, or ELITE. Tap <b>BUILD TODAY'S HR BOARD</b> to rank the slate."
-                "</div>",unsafe_allow_html=True)
     with tabs[5]:
         st.subheader("🏠 HR Tracker")
-        st.caption("Live home runs from today's MLB slate matched back to the model.")
+        st.caption("Live home runs from today's slate")
 
         if homers_today.empty:
             st.info("No home runs recorded yet.")
@@ -888,10 +887,10 @@ else:
                 rankings,
                 on="Batter",
                 how="left"
-            )
+            )  
 
             tracker["Model Match"] = tracker["Rank"].apply(
-                lambda x: "✅ In Model" if pd.notna(x) else "⚠️ Not Ranked"
+                lambda x: "✅ In Model" if pd.notna(x) else "❌ Not Ranked"
             )
 
             tracker_cols = [
@@ -914,16 +913,4 @@ else:
                 hide_index=True,
                 use_container_width=True
             )
-with st.expander("ℹ️ What changed in V3.1"):
-    st.markdown("""
-- **Contact-first weighting:** 65% recent hitter contact, 15% pitch-type matchup, 20% pitcher vulnerability.
-- **L10 contact gate:** Barrel ≥20%, Hard-Hit ≥50%, Avg EV ≥90, Max EV ≥105, Pull-Air ≥30%, Pull-Barrel ≥10%, Sweet-Spot ≥30%.
-- **Tier qualification is separate from rank.** A 92 HR Score does not automatically mean ELITE.
-- **ELITE:** 90+ score, at least 4/7 contact confirmations, plus a strong Barrel/Hard-Hit/EV combination.
-- **STRONG:** 85+ score, at least 3/7 confirmations, plus a credible power/contact core.
-- **GOOD:** 80+ score, at least 2/7 confirmations and at least one meaningful HR-contact signal.
-- **Missing pitch matchup is no longer rewarded.** N/A is neutral plus a small confidence penalty.
-- **Pitch mix:** pitches used ≥20% are evaluated; if none reach 20%, the pitcher's top two are used.
-- **Recent blend remains:** Last 10 BBE = 60%, Last 15 BBE = 40%.
-- The HR Score is a **ranking score, not a probability**.
-""")
+
