@@ -871,7 +871,49 @@ else:
     st.markdown("<div class='note'>V3 is contact-first. Hitters need real L10 contact confirmations before "
                 "the model can label them GOOD, STRONG, or ELITE. Tap <b>BUILD TODAY'S HR BOARD</b> to rank the slate."
                 "</div>",unsafe_allow_html=True)
+    with tabs[5]:
+        st.subheader("🏠 HR Tracker")
+        st.caption("Live home runs from today's MLB slate matched back to the model.")
 
+        if homers_today.empty:
+            st.info("No home runs recorded yet.")
+        else:
+            hr_counts = (
+                homers_today.groupby("Batter")
+                .size()
+                .reset_index(name="HRs")
+            )
+
+            tracker = hr_counts.merge(
+                rankings,
+                on="Batter",
+                how="left"
+            )
+
+            tracker["Model Match"] = tracker["Rank"].apply(
+                lambda x: "✅ In Model" if pd.notna(x) else "⚠️ Not Ranked"
+            )
+
+            tracker_cols = [
+                "Batter",
+                "HRs",
+                "Rank",
+                "Team",
+                "Lineup Spot",
+                "Pitch Match",
+                "HR Score",
+                "Pitcher Vulnerability",
+                "Grade",
+                "Model Match"
+            ]
+
+            tracker_cols = [c for c in tracker_cols if c in tracker.columns]
+
+            st.dataframe(
+                tracker[tracker_cols],
+                hide_index=True,
+                use_container_width=True
+            )
 with st.expander("ℹ️ What changed in V3.1"):
     st.markdown("""
 - **Contact-first weighting:** 65% recent hitter contact, 15% pitch-type matchup, 20% pitcher vulnerability.
