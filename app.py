@@ -688,7 +688,7 @@ if run:
 }
         pm["Team"] = pm["Team"].replace(team_abbr)
         pm["Game Time"] = pd.to_datetime(pm["Game Time"], utc=True, errors="coerce").dt.tz_convert("America/New_York").dt.strftime("%-I:%M %p ET")
-        cols = ["Pitch Rank", "Batter", "Lineup Spot", "Team", "Game Time", "Opp SP", "Pitch Match", "HR Score", "Pitcher Vulnerability", "Pitch Grade", "L10 AvgEV", "L10 Barrel%", "L10 HardHit%"]
+        cols = ["Pitch Rank", "Game Time", "Batter", "Lineup Spot", "Team", "Opp SP", "Pitch Match", "HR Score", "Pitcher Vulnerability", "Pitch Grade", "L10 AvgEV", "L10 Barrel%", "L10 HardHit%"]
         cols = [c for c in cols if c in pm.columns]
         styled_pm = pm[cols].style
 
