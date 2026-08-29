@@ -867,9 +867,6 @@ if run:
     st.markdown("<div class='note'><b>V3.1:</b> HR Score ranks the board, while tier labels require raw L10 contact qualification. Pitch-type matchup and "
                 "pitcher vulnerability confirm the spot rather than overpowering weak contact. The HR Score is "
                 "a <b>ranking score, not HR probability</b>.</div>",unsafe_allow_html=True)
-else:
-    st.markdown("<div class='note'>V3 is contact-first. Hitters need real L10 contact confirmations before "
-                "the model can label them GOOD, STRONG, or ELITE. Tap <b>BUILD TODAY'S HR BOARD</b> to rank the slate."
     with tabs[5]:
         st.subheader("🏠 HR Tracker")
         st.caption("Live home runs from today's slate")
@@ -887,10 +884,10 @@ else:
                 rankings,
                 on="Batter",
                 how="left"
-            )  
+            )
 
             tracker["Model Match"] = tracker["Rank"].apply(
-                lambda x: "✅ In Model" if pd.notna(x) else "❌ Not Ranked"
+                lambda x: "✅ In Model" if pd.notna(x) else "❌ Not In Model"
             )
 
             tracker_cols = [
@@ -913,4 +910,10 @@ else:
                 hide_index=True,
                 use_container_width=True
             )
+else:
+        st.markdown(
+        "<div class='note'>V3 is contact-first. Hitters need real L10 contact confirmations before "
+        "the model can label them GOOD, STRONG, or ELITE. Tap <b>BUILD TODAY'S HR BOARD</b> to rank the slate.</div>",
+        unsafe_allow_html=True
+    )
 
