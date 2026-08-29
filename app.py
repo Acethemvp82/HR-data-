@@ -123,6 +123,7 @@ def get_schedule(game_date):
         for g in d.get("games",[]):
             a=g["teams"]["away"]["team"]; h=g["teams"]["home"]["team"]
             rows.append({
+                "game_pk": g.get("gamePk"),
                 "away_id":a["id"],"away":a["name"],"home_id":h["id"],"home":h["name"],
                 "away_sp_id":g["teams"]["away"].get("probablePitcher",{}).get("id"),
                 "away_sp":g["teams"]["away"].get("probablePitcher",{}).get("fullName"),
@@ -133,6 +134,27 @@ def get_schedule(game_date):
                 "status":g.get("status",{}).get("detailedState",""),
             })
     return pd.DataFrame(rows)
+    @st.cache_data(ttl=60, show_spinner=False)
+def get_game_homers(game_pk):
+    data = req_json(f"{MLB_API}/game/{int(game_pk)}/feed/live")
+
+    homers = []
+
+    plays = data.get("liveData", {}).get("plays", {}).get("allPlays", [])
+
+    for play in plays:
+        result = play.get("result", {})
+
+        if result.get("eventType") == "home_run":
+            batter = play.get("matchup", {}).get("batter", {})
+
+            homers.append({
+                "Batter": batter.get("fullName", ""),
+                "batter_id": batter.get("id"),
+                "HR": "💣"
+            })
+
+    return homers
 @st.cache_data(ttl=300, show_spinner=False)
 def get_lineup_spots(game_date):
     schedule = req_json(f"{MLB_API}/schedule", {
@@ -538,7 +560,16 @@ if run:
            rankings = rankings.merge(lineups, on=["Batter", "Team"], how="left")
     if schedule.empty:
         st.warning("No MLB games found.");st.stop()
+    # Collect home runs from today's slate
+    homer_rows = []
 
+    for _, game in schedule.iterrows():
+        game_pk = game.get("game_pk")
+
+        if pd.notna(game_pk):
+            homer_rows.extend(get_game_homers(game_pk))
+
+    homers_today = pd.DataFrame(homer_rows)
     st.markdown(f"### Slate — {selected.strftime('%B %d, %Y')}")
     for _, g in schedule.iterrows():
         game_time = pd.to_datetime(g["game_time"], utc=True).tz_convert("America/New_York")
@@ -558,7 +589,7 @@ if run:
     m2.metric("Qualified",len(rankings[rankings["HR Score"]>=minimum]))
     m3.metric("Top",rankings.iloc[0]["HR Score"])
 
-    tabs=st.tabs(["🔥 Best HR Spots","🎯 Pitch Mix","🔗 Pairings","🚀 Elite","📊 Full Board"])
+    tabs=st.tabs(["🔥 Best HR Spots","🎯 Pitch Mix","🔗 Pairings","🚀 Elite","📊 Full Board","🏠 HR Tracker"])
     with tabs[0]:
         if q.empty:st.info("No hitters meet the current minimum score.")
         else:
