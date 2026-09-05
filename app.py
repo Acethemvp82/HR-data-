@@ -640,6 +640,7 @@ if run:
             return "background-color:#ffe0b2;color:black;font-weight:700;"
         return ""
     def color_pitcher_vulnerability(v):
+    
         if pd.isna(v):
             return ""
         if v >= 85:
@@ -650,6 +651,18 @@ if run:
             return "background-color:#ffcc80;color:black;font-weight:bold"
         else:
             return "background-color:#ff7043;color:black;font-weight:bold"
+
+    def color_l10_ev(v):
+        if pd.isna(v):
+            return ""
+        if v >= 95:
+            return "background-color:#2e7d32; color:white"
+        elif v >= 92:
+            return "background-color:#81c784; color:black"
+        elif v >= 89:
+            return "background-color:#ffd54f; color:black"
+        else:
+            return "background-color:#ef5350; color:white"
     with tabs[1]:
         pm=rankings.sort_values("Pitch Match",ascending=False).reset_index(drop=True)
         pm["Pitch Rank"]=range(1,len(pm)+1)
@@ -709,7 +722,11 @@ if run:
                 color_hr_score,
                 subset=["HR Score"]
             )
-
+        if "L10 AvgEV" in cols:
+            styled_pm = styled_pm.map(
+                color_l10_ev,
+                subset=["L10 AvgEV"]
+             )
         for c in ["L10 Barrel%", "L10 HardHit%"]:
             if c in cols:
                 styled_pm = styled_pm.map(
