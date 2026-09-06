@@ -601,14 +601,15 @@ if not lineups.empty:
     ]
 
 if schedule.empty:
-        st.warning("No MLB games found.");st.stop()
-    # Collect home runs from today's slate
-    homer_rows = []
+    st.warning("No MLB games found."); st.stop()
 
-    for _, game in schedule.iterrows():
-        game_pk = game.get("game_pk")
+# Collect home runs from today's slate
+homer_rows = []
 
-        if pd.notna(game_pk):
+for _, game in schedule.iterrows():
+    game_pk = game.get("game_pk")
+
+    if pd.notna(game_pk):
             homer_rows.extend(get_game_homers(game_pk))
 
     homers_today = pd.DataFrame(homer_rows)
