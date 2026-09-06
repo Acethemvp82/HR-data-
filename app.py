@@ -586,7 +586,7 @@ if run:
     with st.spinner("Building and calibrating today's Statcast board..."):
         rankings,schedule=build(str(selected),int(lookback),int(pool)) 
         lineups = get_lineup_spots(str(selected))
-if not lineups.empty:
+        if not lineups.empty:
     rankings = rankings.merge(
         lineups[["batter_id", "Lineup Spot"]],
         on="batter_id",
