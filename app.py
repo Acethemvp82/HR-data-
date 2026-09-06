@@ -443,20 +443,20 @@ def build(game_date,lookback_days,projected_pool):
 
             play = []
 
-             if not team_lineup.empty:
-                 starter_ids = set(team_lineup["batter_id"].astype(int))
+            if not team_lineup.empty:
+                starter_ids = set(team_lineup["batter_id"].astype(int))
 
-                 for _,p in roster.iterrows():
-                     pid = int(p["player_id"])
+                for _,p in roster.iterrows():
+                    pid = int(p["player_id"])
 
-                     if pid not in starter_ids:
+                    if pid not in starter_ids:
                          continue
 
-                     bdf = sc[sc["batter"] == pid]
-                     bbe = len(bdf.dropna(subset=["launch_speed","launch_angle"]))
-                     pa = recent_pa_count(bdf,recent_cutoff)
+                    bdf = sc[sc["batter"] == pid]
+                    bbe = len(bdf.dropna(subset=["launch_speed","launch_angle"]))
+                    pa = recent_pa_count(bdf,recent_cutoff)
 
-                     play.append((pid,p["name"],p["position"],pa,bbe))
+                    play.append((pid,p["name"],p["position"],pa,bbe))
 
               else:
                   # No confirmed lineup yet — use recent playing time projection.
