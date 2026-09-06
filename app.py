@@ -433,14 +433,15 @@ def build(game_date,lookback_days,projected_pool):
             (int(g["home_id"]),g["home"],g["away"],g["away_sp_id"],g["away_sp"]),
         ]
         for team_id,team,opp,spid,spname in sides:
-            if spid is None or pd.isna(spid):continue
+            if spid is None or pd.isna(spid):
+                continue
             roster=get_roster(team_id)
             roster=roster[~roster["position"].isin(["P","TWP"])].copy()
 
-             # Use confirmed MLB lineup when available.
-             team_lineup = lineups_now[lineups_now["Team"] == team] if not lineups_now.empty else pd.DataFrame()
+            # Use confirmed MLB lineup when available.
+            team_lineup = lineups_now[lineups_now["Team"] == team] if not lineups_now.empty else pd.DataFrame()
 
-             play = []
+            play = []
 
              if not team_lineup.empty:
                  starter_ids = set(team_lineup["batter_id"].astype(int))
