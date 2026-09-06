@@ -438,7 +438,7 @@ def build(game_date,lookback_days,projected_pool):
             roster=roster[~roster["position"].isin(["P","TWP"])].copy()
 
             # Build likely hitter pool from recent MLB playing time.
-            play=[]8():
+            play=[]
                 pid=int(p["player_id"])
                 bdf=sc[sc["batter"]==pid]
                 bbe=len(bdf.dropna(subset=["launch_speed","launch_angle"]))
