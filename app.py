@@ -187,20 +187,20 @@ def get_lineup_spots(game_date):
                 team_data = box.get(side, {})
                 team_name = team_data.get("team", {}).get("name")
 
-                      for p in team_data.get("players", {}).values():
-                          batting_order = p.get("battingOrder")
+                for p in team_data.get("players", {}).values():
+                    batting_order = p.get("battingOrder")
 
-                          if batting_order:
-                              batting_order = int(str(batting_order))
+                    if batting_order:
+                        batting_order = int(str(batting_order))
 
-                              # Keep only the original 9 starting hitters
-                              if batting_order % 100 == 0 and 100 <= batting_order <= 900:
-                                  rows.append({
-                                      "Batter": p["person"]["fullName"],
-                                      "batter_id": p["person"]["id"],
-                                      "Team": team_name,
-                                      "Lineup Spot": batting_order // 100
-                                  }) 
+                        # Keep only the original 9 starting hitters
+                        if batting_order % 100 == 0 and 100 <= batting_order <= 900:
+                            rows.append({
+                                "Batter": p["person"]["fullName"],
+                                "batter_id": p["person"]["id"],
+                                "Team": team_name,
+                                "Lineup Spot": batting_order // 100
+                             }) 
 @st.cache_data(ttl=1800, show_spinner=False)
 def get_roster(team_id):
     data=req_json(f"{MLB_API}/teams/{team_id}/roster",{"rosterType":"active"})
