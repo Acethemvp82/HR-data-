@@ -425,7 +425,7 @@ def build(game_date,lookback_days,projected_pool):
         sc[c]=pd.to_numeric(sc[c],errors="coerce")
     sc["game_date"]=pd.to_datetime(sc["game_date"])
     recent_cutoff=end-timedelta(days=13)
-
+    rows = []
     lineups_now = get_lineup_spots(str(game_date))
     for _,g in schedule.iterrows():
         sides=[
