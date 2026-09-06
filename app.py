@@ -592,6 +592,12 @@ if run:
                on="batter_id",
                how="left"
            )
+            confirmed_teams = set(lineups["Team"].dropna())
+
+            rankings = rankings[
+                (~rankings["Team"].isin(confirmed_teams)) |
+                (rankings["Lineup Spot"].notna())
+            ]
     if schedule.empty:
         st.warning("No MLB games found.");st.stop()
     # Collect home runs from today's slate
