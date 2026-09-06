@@ -193,6 +193,7 @@ def get_lineup_spots(game_date):
                     if batting_order:
                         rows.append({
                             "Batter": p["person"]["fullName"],
+                            "batter_id": p["person"]["id"],
                             "Team": team_name,
                             "Lineup Spot": int(str(batting_order)) // 100
                         })
