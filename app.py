@@ -600,11 +600,11 @@ if run:
                 (rankings["Lineup Spot"].notna())
             ]
 
-if schedule.empty:
-    st.warning("No MLB games found."); st.stop()
+    if schedule.empty:
+        st.warning("No MLB games found."); st.stop()
 
-# Collect home runs from today's slate
-homer_rows = []
+    # Collect home runs from today's slate
+    homer_rows = []
 
 for _, game in schedule.iterrows():
     game_pk = game.get("game_pk")
