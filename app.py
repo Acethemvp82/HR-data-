@@ -373,7 +373,22 @@ def grade_from_row(row):
     if score >= 75:
         return "👀 WATCH"
     return "— PASS"
+def lineup_edge(v):
+    if pd.isna(v):
+        return "⏳ WAIT"
+    try:
+        v = int(v)
+    except:
+        return "⏳ WAIT"
 
+    if v in [2, 3]:
+        return "🔥 PRIME"
+    elif v in [1, 4]:
+        return "🟢 STRONG"
+    elif v == 5:
+        return "🟡 GOOD"
+    else:
+        return "⚪ LOW"
 def contact_flags(row):
     """V3 contact-first confirmations using the hitter's last 10 BBE."""
     checks = {
