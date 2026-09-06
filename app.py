@@ -458,22 +458,22 @@ def build(game_date,lookback_days,projected_pool):
 
                     play.append((pid,p["name"],p["position"],pa,bbe))
 
-              else:
+            else:
                   # No confirmed lineup yet — use recent playing time projection.
-                  for _,p in roster.iterrows():
-                      pid = int(p["player_id"])
-                      bdf = sc[sc["batter"] == pid]
-                      bbe = len(bdf.dropna(subset=["launch_speed","launch_angle"]))
-                      pa = recent_pa_count(bdf,recent_cutoff)
+                for _,p in roster.iterrows():
+                    pid = int(p["player_id"])
+                    bdf = sc[sc["batter"] == pid]
+                    bbe = len(bdf.dropna(subset=["launch_speed","launch_angle"]))
+                    pa = recent_pa_count(bdf,recent_cutoff)
 
-                      if bbe >= 10:
-                           play.append((pid,p["name"],p["position"],pa,bbe))
+                    if bbe >= 10:
+                        play.append((pid,p["name"],p["position"],pa,bbe))
 
-                   play = sorted(
-                       play,
-                       key=lambda z:(z[3],z[4]),
-                       reverse=True
-                   )[:projected_pool]
+                play = sorted(
+                    play,
+                    key=lambda z:(z[3],z[4]),
+                    reverse=True
+                )[:projected_pool]
 
             spdf=sc[sc["pitcher"]==int(spid)]
             pm=pitcher_metrics(spdf)
