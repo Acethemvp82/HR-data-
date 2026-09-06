@@ -439,6 +439,7 @@ def build(game_date,lookback_days,projected_pool):
 
             # Build likely hitter pool from recent MLB playing time.
             play=[]
+            for _,p in roster.iterrows():
                 pid=int(p["player_id"])
                 bdf=sc[sc["batter"]==pid]
                 bbe=len(bdf.dropna(subset=["launch_speed","launch_angle"]))
