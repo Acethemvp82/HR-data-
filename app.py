@@ -716,7 +716,10 @@ if run:
 }
         pm["Team"] = pm["Team"].replace(team_abbr)
         pm["Game Time"] = pd.to_datetime(pm["Game Time"], utc=True, errors="coerce").dt.tz_convert("America/New_York").dt.strftime("%-I:%M %p ET")
-        pm["Lineup Edge"] = pm["Lineup Spot"].apply(lineup_edge)
+        if "Lineup Spot" in pm.columns:
+            pm["Lineup Edge"] = pm["Lineup Spot"].apply(lineup_edge)
+        else:
+            pm["Lineup Edge"] = "⏳ WAIT"
         cols = ["Pitch Rank", "Game Time", "Batter", "Lineup Spot", "Lineup Edge", "Team", "Opp SP", "Pitch Match", "HR Score","L10 AvgEV", "Pitcher Vulnerability", "Pitch Grade", "L10 Barrel%", "L10 HardHit%"]
         cols = [c for c in cols if c in pm.columns]
         styled_pm = pm[cols].style
