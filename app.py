@@ -606,10 +606,10 @@ if run:
     # Collect home runs from today's slate
     homer_rows = []
 
-for _, game in schedule.iterrows():
-    game_pk = game.get("game_pk")
+    for _, game in schedule.iterrows():
+        game_pk = game.get("game_pk")
 
-    if pd.notna(game_pk):
+        if pd.notna(game_pk):
             homer_rows.extend(get_game_homers(game_pk))
 
     homers_today = pd.DataFrame(homer_rows)
