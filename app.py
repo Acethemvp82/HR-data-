@@ -464,6 +464,7 @@ def build(game_date,lookback_days,projected_pool):
                     "batter_id": pid,
                     "Team": team,
                     "Game Time": g.get("game_time",""),
+                    "Opponent": opp,
                     "Recent PA (14d)":pa,"Recent BBE Available":bbe,
                     "Recent Raw":recent_raw,"Pitch Match Raw":match_raw,"Pitcher Raw":praw,
                     "SP Primary Pitches":", ".join(f"{pt} {u:.0%}" for pt,u in pmix) or "N/A",
