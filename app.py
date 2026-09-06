@@ -438,8 +438,7 @@ def build(game_date,lookback_days,projected_pool):
             roster=roster[~roster["position"].isin(["P","TWP"])].copy()
 
             # Build likely hitter pool from recent MLB playing time.
-            play=[]
-            for _,p in roster.iterrows():
+            play=[]8():
                 pid=int(p["player_id"])
                 bdf=sc[sc["batter"]==pid]
                 bbe=len(bdf.dropna(subset=["launch_speed","launch_angle"]))
@@ -585,7 +584,11 @@ if run:
         rankings,schedule=build(str(selected),int(lookback),int(pool)) 
         lineups = get_lineup_spots(str(selected))
         if not lineups.empty:
-           rankings = rankings.merge(lineups, on=["Batter", "Team"], how="left")
+           rankings = rankings.merge(
+               lineups[["batter_id", "Lineup Spot"]],
+               on="batter_id",
+               how="left"
+           )
     if schedule.empty:
         st.warning("No MLB games found.");st.stop()
     # Collect home runs from today's slate
