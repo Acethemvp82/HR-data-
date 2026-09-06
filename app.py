@@ -587,18 +587,18 @@ if run:
         rankings,schedule=build(str(selected),int(lookback),int(pool)) 
         lineups = get_lineup_spots(str(selected))
         if not lineups.empty:
-           rankings = rankings.merge(
-               lineups[["batter_id", "Lineup Spot"]],
-               on="batter_id",
-               how="left"
-           )
-            confirmed_teams = set(lineups["Team"].dropna())
+            rankings = rankings.merge(
+                lineups[["batter_id", "Lineup Spot"]],
+                on="batter_id",
+                how="left"
+             )
+             confirmed_teams = set(lineups["Team"].dropna())
 
-            rankings = rankings[
-                (~rankings["Team"].isin(confirmed_teams)) |
-                (rankings["Lineup Spot"].notna())
-            ]
-    if schedule.empty:
+             rankings = rankings[
+                 (~rankings["Team"].isin(confirmed_teams)) |
+                 (rankings["Lineup Spot"].notna())
+             ]
+         if schedule.empty:
         st.warning("No MLB games found.");st.stop()
     # Collect home runs from today's slate
     homer_rows = []
