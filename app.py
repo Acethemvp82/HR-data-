@@ -201,6 +201,7 @@ def get_lineup_spots(game_date):
                                 "Team": team_name,
                                 "Lineup Spot": batting_order // 100
                              }) 
+    return pd.DataFrame(rows)                        
 @st.cache_data(ttl=1800, show_spinner=False)
 def get_roster(team_id):
     data=req_json(f"{MLB_API}/teams/{team_id}/roster",{"rosterType":"active"})
