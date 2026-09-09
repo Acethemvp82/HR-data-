@@ -774,10 +774,16 @@ if run:
         styled_pm = pm[cols].style
         format_cols = {
             c: "{:.1f}" for c in
-            ["Pitch Match", "HR Score", 
-        "L10 AvgEV", "Pitcher Vulnerability"]
-            if c in cols
-        }
+            [
+                "Pitch Match",
+                "HR Score",
+                "L10 AvgEV",
+                "Pitcher Vulnerability",
+                "L10 Barrel%",
+                "L10 HardHit%"
+    ]
+    if c in cols
+}
         styled_pm = styled_pm.format(format_cols)
 
         if "Pitch Match" in cols:
