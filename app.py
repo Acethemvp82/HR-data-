@@ -772,12 +772,14 @@ if run:
         cols = ["Pitch Rank", "Game Time", "Batter", "Lineup Spot", "Lineup Edge", "Team", "Opp SP", "Pitch Match", "HR Score","L10 AvgEV", "Pitcher Vulnerability", "Pitch Grade", "L10 Barrel%", "L10 HardHit%"]
         cols = [c for c in cols if c in pm.columns]
         styled_pm = pm[cols].style
-format_cols = {
-    c: "{:.1f}" for c in
-    ["Pitch Match", "HR Score", "L10 AvgEV", "Pitcher Vulnerability"]
-    if c in cols
-}
-styled_pm = styled_pm.format(format_cols)
+        format_cols = {
+            c: "{:.1f}" for c in
+            ["Pitch Match", "HR Score", 
+        "L10 AvgEV", "Pitcher Vulnerability"]
+            if c in cols
+        }
+        styled_pm = styled_pm.format(format_cols)
+
         if "Pitch Match" in cols:
             styled_pm = styled_pm.map(
                 color_pitch_match,
