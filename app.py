@@ -814,7 +814,7 @@ if run:
                     color_contact,
                     subset=[c]
                 )
-        
+    
         st.dataframe(
             styled_pm,
             hide_index=True,
