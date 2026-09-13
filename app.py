@@ -814,7 +814,15 @@ if run:
                     color_contact,
                     subset=[c]
                 )
+        # Blue divider at the start of each new team
+        team_change = pm["Team"].ne(pm["Team"].shift())
 
+        def team_divider(row):
+            if team_change.loc[row.name]:
+                return ["border-top: 3px solid #1E90FF"] * len(row)
+            return [""] * len(row)
+
+        styled_pm = styled_pm.apply(team_divider, axis=1)
         st.dataframe(
             styled_pm,
             hide_index=True,
