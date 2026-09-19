@@ -1,4 +1,4 @@
-
+ui
 from datetime import date, timedelta
 from datetime import datetime
 from zoneinfo import ZoneInfo
@@ -774,7 +774,7 @@ if run:
       .rank(method="first", ascending=False)
       .astype(int)
 )
-        cols = ["Pitch Rank", "Game Time", "Batter", "Lineup Spot", "Lineup Edge", "Team", "Opp SP", "Pitch Match", "HR Score", "Pitch Grade","Team PM Rank", "Pitcher Vulnerability", "L10 AvgEV", "L10 Barrel%", "L10 HardHit%"]
+        cols = ["Pitch Rank", "Game Time", "Batter", "Lineup Spot", "Lineup Edge", "Team", "Team PM Rank", "Opp SP", "Pitch Match", "HR Score", "Pitch Grade", "Pitcher Vulnerability", "L10 AvgEV", "L10 Barrel%", "L10 HardHit%"]
         cols = [c for c in cols if c in pm.columns]
         styled_pm = pm[cols].style
         format_cols = {
