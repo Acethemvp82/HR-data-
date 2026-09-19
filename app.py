@@ -769,7 +769,12 @@ if run:
             pm["Lineup Edge"] = pm["Lineup Spot"].apply(lineup_edge)
         else:
             pm["Lineup Edge"] = "⏳ WAIT"
-        cols = ["Pitch Rank", "Game Time", "Batter", "Lineup Spot", "Lineup Edge", "Team", "Opp SP", "Pitch Match", "HR Score", "Pitch Grade", "Pitcher Vulnerability", "L10 AvgEV", "L10 Barrel%", "L10 HardHit%"]
+            pm["Team PM Rank"] = (
+    pm.groupby("Team")["Pitch Match"]
+      .rank(method="first", ascending=False)
+      .astype(int)
+)
+        cols = ["Pitch Rank", "Game Time", "Batter", "Lineup Spot", "Lineup Edge", "Team", "Opp SP", "Pitch Match", "HR Score", "Pitch Grade","Team PM Rank", "Pitcher Vulnerability", "L10 AvgEV", "L10 Barrel%", "L10 HardHit%"]
         cols = [c for c in cols if c in pm.columns]
         styled_pm = pm[cols].style
         format_cols = {
