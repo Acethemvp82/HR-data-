@@ -1,4 +1,4 @@
-ui
+
 from datetime import date, timedelta
 from datetime import datetime
 from zoneinfo import ZoneInfo
